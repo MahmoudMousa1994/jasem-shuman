@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    {% if page %}
+    <!-- Dynamic content from admin -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="page-title text-center mb-5">{{ page.title }}</h1>
+            
+            {% if page.featured_image %}
+            <div class="page-image text-center mb-5">
+                <img src="{{ page.featured_image.url }}" alt="{{ page.title }}" class="img-fluid rounded">
+            </div>
+            {% endif %}
+            
+            <div class="page-content">
+                {{ page.content|linebreaks }}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Default about content -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="page-title text-center mb-5">About Jasem Shuman</h1>
+            
+            <div class="artist-intro mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-10 mx-auto text-center">
+                        <h2>Contemporary Palestinian Artist & Sculptor</h2>
+                        <h4 class="text-muted mb-3">MA Contemporary Arts, Educator & Curator</h4>
+                        <p class="lead">
+                            Jasem J M Mousa (Jasem Shuman) is an internationally recognized Palestinian artist 
+                            with over 15 years of professional practice. His multidisciplinary work spans 
+                            sculpture, painting, film, and community education, serving as both autobiography 
+                            and resistance through art.
+                        </p>
+                        <div class="contact-info mt-4 p-3 bg-light rounded">
+                            <h5>Contact Information</h5>
+                            <p class="mb-1"><strong>Email:</strong> jasem_403@hotmail.com</p>
+                            <p class="mb-1"><strong>Phone:</strong> +972-598176787</p>
+                            <p class="mb-0"><strong>Location:</strong> Al-Bireh, Palestine</p>
+                        </div>
+                        <p>
+                            Born and raised in Palestine, Jasem's artistic journey began during the Second Intifada, 
+                            when art became his safe space for expression after being forced to work as a construction 
+                            worker when war prevented his university education. Since 2006, he has dedicated himself 
+                            to creating art that tells Palestinian stories and serves his community.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="artist-statement mb-5">
+                <h3>Artist Statement</h3>
+                <blockquote class="blockquote">
+                    <p class="mb-0">
+                        "Every Palestinian must tell his story."
+                    </p>
+                </blockquote>
+                <p class="mt-3">
+                    This is where life begins for me – narrating it through my artistic works. My pieces are 
+                    autobiographical and serve as visual translations of my emotional states toward various 
+                    themes: life, self, society, love, language, dreams, and their role in relationships and 
+                    communication. My relationship with the land and the psychology of movement within it, 
+                    fatherhood, and freedom in its general and structured concept.
+                </p>
+                <p>
+                    Palestine can be seen between the lines in each of my works, even if not explicitly mentioned. 
+                    Storytelling is an act of resistance for memory, and memory is both shield and lifeline. 
+                    Since art became my safe space for expression after the Second Intifada in 2006, I have 
+                    been able to pass this feeling and art to others through community work, art education, 
+                    and psychological relief through the arts.
+                </p>
+                <blockquote class="blockquote mt-4">
+                    <footer class="blockquote-footer">Jasem Shuman</footer>
+                </blockquote>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <h4>Education & Training</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>MA Contemporary Arts</strong><br>
+                            <span class="text-muted">Dar Al-Kalima University, Bethlehem (2022-2025)</span>
+                        </li>
+                        <li class="mb-2">
+                            <strong>BA Fine Arts, Minor Media & TV</strong><br>
+                            <span class="text-muted">Al-Quds University, Abu Dis (2010-2013)</span>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Diploma Visual Arts (Level 6)</strong><br>
+                            <span class="text-muted">Visual Arts Forum, Ramallah (2006-2009)</span>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Specialized Certificates</strong><br>
+                            <span class="text-muted">Psychological discharge through Arts, Art education curriculum</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <h4>Current Positions</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>Guest Lecturer</strong><br>
+                            <span class="text-muted">University of Marburg, Germany (2022-Current)</span>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Art Lecturer</strong><br>
+                            <span class="text-muted">Araba American University, Ramallah (2025-Current)</span>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Self-employed Artist</strong><br>
+                            <span class="text-muted">Professional practice (2016-Current)</span>
+                        </li>
+                        <li class="mb-2">
+                            <strong>Art Consultant & Trainer</strong><br>
+                            <span class="text-muted">Psychosocial support through art</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="artistic-philosophy mb-5">
+                <h3>Artistic Practice & Philosophy</h3>
+                <p>
+                    Jasem works across diverse mediums including painting and coloring, sculpture on clay 
+                    and stone, granite works in large urban scales, metalworking with iron and industrial 
+                    materials, and installation works. He also engages in poetry and film direction when 
+                    opportunities arise, viewing art as a multifaceted tool for storytelling and community healing.
+                </p>
+                <p>
+                    Urban sculptural works represent his greatest passion, as he sees in them tremendous 
+                    ability to reach society with thought, art, and beauty, and to improve the environment 
+                    around us. Through these public interventions, he can tell his story to the largest 
+                    possible number of people and add visual testimonies to the civilization surrounding us.
+                </p>
+                <p>
+                    Having become one of the few specialists in psychological relief through arts in his 
+                    community, Jasem's work extends beyond personal expression to serve as a healing 
+                    mechanism for collective trauma and a means of cultural preservation and resistance.
+                </p>
+            </div>
+
+            <div class="exhibitions-section mb-5">
+                <h3>Recent International Exhibitions</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h5>2024</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>"Aurora" Art Biennale</strong><br>
+                                <span class="text-muted">Malmo, Sweden</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>"Drawing by Moving" Art Residency</strong><br>
+                                <span class="text-muted">La Cambre University, Brussels, Belgium</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>"TAKATUF" MA Students Exhibition</strong><br>
+                                <span class="text-muted">Dar Al-Kalima University, Bethlehem</span>
+                            </li>
+                        </ul>
+                        
+                        <h5>2022</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>European Museum Tour</strong><br>
+                                <span class="text-muted">Romania: Brukenthal National Museum (Sibiu), 
+                                Tara Crisurilor National Museum (Oradea), Mojoswoaia Palace (Bucharest)</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Duke Castle Museum</strong><br>
+                                <span class="text-muted">Salamanca, Spain</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6 mb-4">
+                        <h5>Awards & Recognition</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>Forum for Students Inventions Award</strong><br>
+                                <span class="text-muted">Fourth Place, Arab Council for Training Students, Riyadh, 2012</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Water International Day Competition</strong><br>
+                                <span class="text-muted">Second Place, Palestinian Water Authority, 2011</span>
+                            </li>
+                        </ul>
+                        
+                        <h5>Professional Memberships</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>Palestinian Association for Contemporary Art (PACA)</strong><br>
+                                <span class="text-muted">Member since 2018</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Visual Arts Forum (VAF)</strong><br>
+                                <span class="text-muted">Member since 2006, Board Member 2012-2016</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collections-section mb-5">
+                <h3>Public Collections & Commissions</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>"AL-Mu'allim" (Steel structure)</strong><br>
+                                <span class="text-muted">Al-Bireh Municipality, Palestine, 2022</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>"Parenthood" (Granite sculpture)</strong><br>
+                                <span class="text-muted">Alba De Tormes Municipality, Spain, 2022</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>"Elm Wa Alam" (Bronze sculpture)</strong><br>
+                                <span class="text-muted">Arab American University, Ramallah, 2018</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Sport Martyrs Monument</strong><br>
+                                <span class="text-muted">Ministry of Youth and Sports, Ramallah, 2017</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>"Kids" (Metal mural)</strong><br>
+                                <span class="text-muted">Jawwal Telecommunications, Ramallah, 2018</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>"Jerusalem Capital of Arab Culture" (Trophy)</strong><br>
+                                <span class="text-muted">President Office, Ramallah, 2009</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Works in International Collections</strong><br>
+                                <span class="text-muted">London, UK & Caransebes, Romania</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="media-section mb-5">
+                <h3>Film & Media Work</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h5>Art Direction & Props</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>"The Flag" (2024)</strong><br>
+                                <span class="text-muted">Art Director - Short feature by Mashal Qawasmi</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>"All That Left of You" (2024)</strong><br>
+                                <span class="text-muted">Props Master - Feature by Cherien Dabis</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>"Thank You for Banking with Us" (2023)</strong><br>
+                                <span class="text-muted">Props Master - Feature by Laila Abbas</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5>Publications & Features</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <strong>Academic Articles</strong><br>
+                                <span class="text-muted">Palestine Studies & Briarpatch Magazine</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>Documentary Features</strong><br>
+                                <span class="text-muted">"Road to Jerusalem" (2011), "Empty Place" (2022)</span>
+                            </li>
+                            <li class="mb-2">
+                                <strong>International Press</strong><br>
+                                <span class="text-muted">Coverage in Spanish, Romanian, and Arabic media</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contact-cta text-center">
+                <h4>Interested in Learning More?</h4>
+                <p>For commissions, exhibitions, or general inquiries, please don't hesitate to reach out.</p>
+                <p><strong>Contact:</strong> jasem_403@hotmail.com | +972-598176787</p>
+                <a href="{% url 'pages:contact' %}" class="btn btn-primary btn-lg">Get in Touch</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.artist-photo {
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.artist-intro {
+    margin-bottom: 3rem;
+}
+
+.artist-statement {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.blockquote {
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+.contact-cta {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: 10px;
+    margin-top: 3rem;
+}
+
+.contact-cta h4 {
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .artist-intro .row {
+        flex-direction: column-reverse;
+    }
+    
+    .artist-intro .col-md-6:first-child {
+        margin-top: 2rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="page-title">{{ category.get_name_display }}</h1>
+            <p class="page-subtitle">{{ category.description|default:"Explore Jasem's collection of "|add:category.get_name_display|lower }}</p>
+        </div>
+    </div>
+    
+    <!-- Filters and Search -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <form method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query }}" 
+                           placeholder="Search {{ category.get_name_display|lower }}..."
+                           class="form-control">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-lg-6 text-end">
+            <div class="view-options">
+                <span class="text-muted">{{ artworks.paginator.count }} artwork{{ artworks.paginator.count|pluralize }} found</span>
+                <div class="btn-group ms-3" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" id="gridView">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="listView">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Results Info -->
+    {% if search_query %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-search"></i> 
+                Showing results for "<strong>{{ search_query }}</strong>" in {{ category.get_name_display }}
+                <a href="{% url 'gallery:category' category.name %}" class="btn btn-sm btn-outline-primary ms-2">Clear Search</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Artworks Grid -->
+    {% if artworks %}
+    <div class="artworks-container" id="artworksGrid">
+        <div class="row">
+            {% for artwork in artworks %}
+            <div class="col-lg-4 col-md-6 mb-4 artwork-item">
+                <div class="artwork-card">
+                    <div class="artwork-image">
+                        <img src="{{ artwork.main_image.url }}" 
+                             alt="{{ artwork.title }}"
+                             class="img-fluid">
+                        <div class="artwork-overlay">
+                            <div class="artwork-actions">
+                                <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
+                                   class="btn btn-primary btn-sm">View Details</a>
+                                {% if artwork.original_available or artwork.second_option_available %}
+                                <button class="btn btn-outline-light btn-sm ms-2 add-to-cart-btn"
+                                        data-artwork-id="{{ artwork.id }}">
+                                    Quick Add
+                                </button>
+                                {% endif %}
+                            </div>
+                            <div class="artwork-status">
+                                {% if artwork.featured %}
+                                <span class="badge bg-warning">Featured</span>
+                                {% endif %}
+                                {% if not artwork.original_available and not artwork.second_option_available %}
+                                <span class="badge bg-secondary">Sold Out</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="artwork-info">
+                        <h4 class="artwork-title">
+                            <a href="{% url 'gallery:artwork_detail' artwork.pk %}">{{ artwork.title }}</a>
+                        </h4>
+                        <p class="artwork-year">{{ artwork.artwork_creation_date.year }}</p>
+                        <p class="artwork-dimensions">{{ artwork.original_dimensions_display }}</p>
+                        <div class="artwork-pricing">
+                            {% if artwork.original_available %}
+                            <div class="price-option">
+                                <span class="price-label">Original:</span>
+                                <span class="price">${{ artwork.original_price }}</span>
+                            </div>
+                            {% endif %}
+                            {% if artwork.second_option_available %}
+                            <div class="price-option">
+                                <span class="price-label">{{ artwork.second_option_name }}:</span>
+                                <span class="price">${{ artwork.second_option_price }}</span>
+                            </div>
+                            {% endif %}
+                            {% if not artwork.original_available and not artwork.second_option_available %}
+                            <div class="sold-notice">
+                                <span class="text-muted">Sold</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if artwork.description %}
+                        <p class="artwork-excerpt">
+                            {{ artwork.description|truncatewords:15 }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- List View (Hidden by default) -->
+    <div class="artworks-container d-none" id="artworksList">
+        {% for artwork in artworks %}
+        <div class="artwork-list-item row mb-4 p-3 border rounded">
+            <div class="col-md-3">
+                <img src="{{ artwork.main_image.url }}" 
+                     alt="{{ artwork.title }}"
+                     class="img-fluid">
+            </div>
+            <div class="col-md-9">
+                <div class="artwork-details">
+                    <h4 class="artwork-title">
+                        <a href="{% url 'gallery:artwork_detail' artwork.pk %}">{{ artwork.title }}</a>
+                    </h4>
+                    <p class="artwork-meta">
+                        {{ artwork.artwork_creation_date.year }} • {{ artwork.original_dimensions_display }}
+                    </p>
+                    <p class="artwork-description">{{ artwork.description|truncatewords:30 }}</p>
+                    <div class="artwork-pricing mb-3">
+                        {% if artwork.original_available %}
+                        <span class="price me-3">Original: ${{ artwork.original_price }}</span>
+                        {% endif %}
+                        {% if artwork.second_option_available %}
+                        <span class="price">{{ artwork.second_option_name }}: ${{ artwork.second_option_price }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="artwork-actions">
+                        <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
+                           class="btn btn-primary btn-sm">View Details</a>
+                        {% if artwork.original_available or artwork.second_option_available %}
+                        <button class="btn btn-outline-primary btn-sm ms-2 add-to-cart-btn"
+                                data-artwork-id="{{ artwork.id }}">
+                            Add to Cart
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if artworks.has_other_pages %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <nav aria-label="Artworks pagination">
+                <ul class="pagination justify-content-center">
+                    {% if artworks.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ artworks.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in artworks.paginator.page_range %}
+                    {% if artworks.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > artworks.number|add:'-3' and num < artworks.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if artworks.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ artworks.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ artworks.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Last</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- No Artworks Found -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center py-5">
+            <div class="no-results">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h3>No Artworks Found</h3>
+                {% if search_query %}
+                <p>No {{ category.get_name_display|lower }} match your search for "{{ search_query }}".</p>
+                <a href="{% url 'gallery:category' category.name %}" class="btn btn-primary">View All {{ category.get_name_display }}</a>
+                {% else %}
+                <p>There are currently no {{ category.get_name_display|lower }} available in this collection.</p>
+                <a href="{% url 'gallery:home' %}" class="btn btn-primary">Back to Gallery</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // View toggle functionality
+    $('#gridView').on('click', function() {
+        $(this).addClass('active').siblings().removeClass('active');
+        $('#artworksGrid').removeClass('d-none');
+        $('#artworksList').addClass('d-none');
+    });
+    
+    $('#listView').on('click', function() {
+        $(this).addClass('active').siblings().removeClass('active');
+        $('#artworksList').removeClass('d-none');
+        $('#artworksGrid').addClass('d-none');
+    });
+    
+    // Add to cart functionality
+    $('.add-to-cart-btn').on('click', function() {
+        const artworkId = $(this).data('artwork-id');
+        // Will implement in store app
+        alert('Add to cart functionality will be implemented in the checkout phase');
+    });
+});
+</script>
+
+<style>
+.artwork-list-item {
+    transition: box-shadow 0.3s ease;
+}
+
+.artwork-list-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.price-option {
+    margin-bottom: 0.25rem;
+}
+
+.price-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.price {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.artwork-excerpt {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.view-options {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+    .view-options {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+}
+</style>
+{% endblock %}

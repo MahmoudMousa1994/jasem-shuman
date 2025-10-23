@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Checkout</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="checkout-form">
+                        {% csrf_token %}
+                        
+                        <!-- Step 1: Shipping Information -->
+                        <div class="checkout-step mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <span class="badge bg-primary me-2">1</span>Shipping Information
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">First Name *</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Last Name *</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Street Address *</label>
+                                <input type="text" class="form-control" id="address" name="address" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="city" class="form-label">City *</label>
+                                    <input type="text" class="form-control" id="city" name="city" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="state" class="form-label">State *</label>
+                                    <select class="form-select" id="state" name="state" required>
+                                        <option value="">Select State</option>
+                                        <option value="AL">Alabama</option>
+                                        <option value="AK">Alaska</option>
+                                        <option value="AZ">Arizona</option>
+                                        <!-- Add more states as needed -->
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="zip_code" class="form-label">ZIP Code *</label>
+                                    <input type="text" class="form-control" id="zip_code" name="zip_code" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Payment Information -->
+                        <div class="checkout-step mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <span class="badge bg-primary me-2">2</span>Payment Information
+                            </h5>
+                            <div class="mb-3">
+                                <label class="form-label">Payment Method *</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="credit_card" value="credit_card" checked>
+                                    <label class="form-check-label" for="credit_card">
+                                        <i class="fas fa-credit-card me-2"></i>Credit Card
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal">
+                                    <label class="form-check-label" for="paypal">
+                                        <i class="fab fa-paypal me-2"></i>PayPal
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="credit-card-form">
+                                <div class="mb-3">
+                                    <label for="card_number" class="form-label">Card Number *</label>
+                                    <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="expiry_date" class="form-label">Expiry Date *</label>
+                                        <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="cvv" class="form-label">CVV *</label>
+                                        <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="card_name" class="form-label">Name on Card *</label>
+                                    <input type="text" class="form-control" id="card_name" name="card_name">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Special Instructions -->
+                        <div class="checkout-step mb-4">
+                            <h5 class="border-bottom pb-2 mb-3">
+                                <span class="badge bg-primary me-2">3</span>Special Instructions
+                            </h5>
+                            <div class="mb-3">
+                                <label for="special_instructions" class="form-label">Additional Notes (Optional)</label>
+                                <textarea class="form-control" id="special_instructions" name="special_instructions" rows="3" placeholder="Any special delivery instructions or notes..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'store:cart' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Cart
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-lock me-2"></i>Place Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Order Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Order items will be populated here -->
+                    <div id="order-items">
+                        <p class="text-muted">Loading cart items...</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        <span id="shipping">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax:</span>
+                        <span id="tax">$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="total">$0.00</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Information -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-shield-alt me-2 text-success"></i>Secure Checkout
+                    </h6>
+                    <small class="text-muted">
+                        • SSL encrypted payment processing<br>
+                        • Your information is never stored<br>
+                        • 30-day return policy<br>
+                        • Satisfaction guaranteed
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.checkout-step {
+    border-left: 3px solid #007bff;
+    padding-left: 1rem;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Payment method toggle
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const creditCardForm = document.getElementById('credit-card-form');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            if (this.value === 'credit_card') {
+                creditCardForm.style.display = 'block';
+            } else {
+                creditCardForm.style.display = 'none';
+            }
+        });
+    });
+    
+    // Form validation
+    const checkoutForm = document.getElementById('checkout-form');
+    checkoutForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation
+        const requiredFields = checkoutForm.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (isValid) {
+            // Process the order
+            processOrder();
+        } else {
+            alert('Please fill in all required fields.');
+        }
+    });
+    
+    // Load order summary
+    loadOrderSummary();
+});
+
+function processOrder() {
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
+    
+    // Simulate order processing
+    setTimeout(() => {
+        // Redirect to success page (placeholder)
+        window.location.href = '/store/order-success/';
+    }, 2000);
+}
+
+function loadOrderSummary() {
+    // Placeholder for loading order summary
+    const orderItems = document.getElementById('order-items');
+    orderItems.innerHTML = '<p class="text-muted text-center">No items in cart</p>';
+    
+    // Update totals
+    document.getElementById('subtotal').textContent = '$0.00';
+    document.getElementById('shipping').textContent = '$0.00';
+    document.getElementById('tax').textContent = '$0.00';
+    document.getElementById('total').textContent = '$0.00';
+}
+</script>
+{% endblock %}

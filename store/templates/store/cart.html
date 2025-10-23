@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h3 class="mb-0">Shopping Cart</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Cart Items -->
+                    <div id="cart-items">
+                        {% comment %}
+                        <!-- Example cart item -->
+                        <div class="row align-items-center border-bottom py-3">
+                            <div class="col-md-2">
+                                <img src="{% static 'images/placeholder-artwork.jpg' %}" alt="Artwork" class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-4">
+                                <h5 class="mb-1">Artwork Title</h5>
+                                <p class="text-muted mb-0">Medium: Oil on Canvas</p>
+                                <p class="text-muted mb-0">Size: 24" x 36"</p>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <button class="btn btn-outline-secondary" type="button">-</button>
+                                    <input type="number" class="form-control text-center" value="1" min="1">
+                                    <button class="btn btn-outline-secondary" type="button">+</button>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <strong>$1,250.00</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endcomment %}
+                        
+                        <!-- Empty cart message -->
+                        <div class="text-center py-5" id="empty-cart">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <h4>Your cart is empty</h4>
+                            <p class="text-muted">Browse our gallery to discover amazing artworks</p>
+                            <a href="{% url 'gallery:home' %}" class="btn btn-primary">
+                                <i class="fas fa-palette me-2"></i>Browse Gallery
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        <span id="shipping">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax:</span>
+                        <span id="tax">$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong id="total">$0.00</strong>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-lg" id="checkout-btn" style="display: none;">
+                            <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                        </a>
+                        <a href="{% url 'gallery:home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Info -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-truck me-2"></i>Shipping Information
+                    </h6>
+                    <small class="text-muted">
+                        • Free shipping on orders over $500<br>
+                        • Professional packaging and handling<br>
+                        • Insured delivery with tracking<br>
+                        • 7-14 business days delivery
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.input-group-sm .form-control {
+    max-width: 60px;
+}
+
+#cart-items .row:last-child {
+    border-bottom: none !important;
+}
+
+.btn-outline-danger:hover {
+    transform: scale(1.05);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cart functionality will be implemented here
+    updateCartDisplay();
+});
+
+function updateCartDisplay() {
+    // Placeholder for cart update logic
+    const cartItems = []; // This will be populated from backend
+    
+    if (cartItems.length === 0) {
+        document.getElementById('empty-cart').style.display = 'block';
+        document.getElementById('checkout-btn').style.display = 'none';
+    } else {
+        document.getElementById('empty-cart').style.display = 'none';
+        document.getElementById('checkout-btn').style.display = 'block';
+    }
+}
+
+function updateQuantity(itemId, newQuantity) {
+    // AJAX call to update quantity
+    fetch('/store/update-cart/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            quantity: newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartDisplay();
+        }
+    });
+}
+
+function removeFromCart(itemId) {
+    // AJAX call to remove item
+    if (confirm('Are you sure you want to remove this item from your cart?')) {
+        fetch('/store/remove-from-cart/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                item_id: itemId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateCartDisplay();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

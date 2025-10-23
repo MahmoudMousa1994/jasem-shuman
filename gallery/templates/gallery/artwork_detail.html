@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Artwork Images -->
+        <div class="col-lg-8">
+            <div class="artwork-images">
+                <!-- Main Image -->
+                <div class="main-image mb-4">
+                    <img src="{{ artwork.main_image.url }}" 
+                         alt="{{ artwork.title }}"
+                         class="img-fluid main-artwork-image"
+                         id="mainArtworkImage">
+                </div>
+                
+                <!-- Sculpture Additional Images (if applicable) -->
+                {% if sculpture_images %}
+                <div class="sculpture-gallery">
+                    <h5 class="mb-3">Multiple Views</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <img src="{{ artwork.main_image.url }}" 
+                                 alt="{{ artwork.title }} - Main view"
+                                 class="img-fluid sculpture-thumb active"
+                                 onclick="changeMainImage('{{ artwork.main_image.url }}')">
+                            <small class="d-block text-center mt-1">Main View</small>
+                        </div>
+                        {% for image in sculpture_images %}
+                        <div class="col-md-3 mb-3">
+                            <img src="{{ image.image.url }}" 
+                                 alt="{{ artwork.title }} - {{ image.angle_description }}"
+                                 class="img-fluid sculpture-thumb"
+                                 onclick="changeMainImage('{{ image.image.url }}')">
+                            <small class="d-block text-center mt-1">{{ image.angle_description }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Video (if available) -->
+                {% if artwork.artwork_video %}
+                <div class="artwork-video mt-4">
+                    <h5 class="mb-3">Video Tour</h5>
+                    <video controls class="img-fluid">
+                        <source src="{{ artwork.artwork_video.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Artwork Details -->
+        <div class="col-lg-4">
+            <div class="artwork-details">
+                <!-- Basic Info -->
+                <div class="artwork-header mb-4">
+                    <h1 class="artwork-title">{{ artwork.title }}</h1>
+                    <p class="artwork-meta">
+                        <span class="category">{{ artwork.category.get_name_display }}</span> • 
+                        <span class="year">{{ artwork.artwork_creation_date.year }}</span>
+                    </p>
+                    <p class="artwork-age text-muted">
+                        Created {{ artwork.artwork_age_years }} year{{ artwork.artwork_age_years|pluralize }} ago
+                    </p>
+                </div>
+                
+                <!-- Pricing and Purchase Options -->
+                <div class="purchase-options mb-4">
+                    <h4>Purchase Options</h4>
+                    
+                    <!-- Original Artwork -->
+                    {% if artwork.original_available %}
+                    <div class="price-option original-option">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>Original Artwork</strong>
+                            <span class="price h5 mb-0">${{ artwork.original_price }}</span>
+                        </div>
+                        <p class="option-details">
+                            {{ artwork.original_dimensions_display }}
+                        </p>
+                        <button class="btn btn-primary w-100 add-to-cart-btn" 
+                                data-artwork-id="{{ artwork.id }}" 
+                                data-item-type="original">
+                            Add Original to Cart
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="price-option sold-option">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>Original Artwork</strong>
+                            <span class="badge bg-secondary">SOLD</span>
+                        </div>
+                        <p class="option-details text-muted">
+                            {{ artwork.original_dimensions_display }}
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Second Option (Prints/Photo Set) -->
+                    {% if artwork.second_option_available %}
+                    <div class="price-option second-option mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>{{ artwork.second_option_name }}</strong>
+                            <span class="price h5 mb-0">${{ artwork.second_option_price }}</span>
+                        </div>
+                        <p class="option-details">
+                            {% if artwork.category.name == 'painting' %}
+                                High-quality print: {{ artwork.print_dimensions_display }}
+                            {% else %}
+                                Set of 8 signed photographs showcasing multiple angles
+                            {% endif %}
+                        </p>
+                        <p class="availability text-muted">
+                            {{ artwork.remaining_second_option }} of {{ artwork.total_second_option_copies }} available
+                        </p>
+                        <button class="btn btn-outline-primary w-100 add-to-cart-btn" 
+                                data-artwork-id="{{ artwork.id }}" 
+                                data-item-type="second_option">
+                            Add {{ artwork.second_option_name }} to Cart
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="price-option sold-option mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>{{ artwork.second_option_name }}</strong>
+                            <span class="badge bg-secondary">SOLD OUT</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Wishlist -->
+                <div class="wishlist-section mb-4">
+                    <button class="btn btn-outline-secondary w-100 wishlist-btn" 
+                            data-artwork-id="{{ artwork.id }}">
+                        <i class="fas fa-heart"></i> Add to Wishlist
+                    </button>
+                </div>
+                
+                <!-- Description -->
+                <div class="artwork-description mb-4">
+                    <h5>Description</h5>
+                    <p>{{ artwork.description|linebreaks }}</p>
+                </div>
+                
+                <!-- Artist Statement -->
+                {% if artwork.artist_statement %}
+                <div class="artist-statement mb-4">
+                    <h5>Artist's Statement</h5>
+                    <p class="font-italic">{{ artwork.artist_statement|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- Artwork Details -->
+                <div class="technical-details">
+                    <h5>Technical Details</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Category:</strong> {{ artwork.category.get_name_display }}</li>
+                        <li><strong>Original Size:</strong> {{ artwork.original_dimensions_display }}</li>
+                        {% if artwork.category.name == 'painting' %}
+                        <li><strong>Print Size:</strong> {{ artwork.print_dimensions_display }}</li>
+                        {% endif %}
+                        <li><strong>Year Created:</strong> {{ artwork.artwork_creation_date.year }}</li>
+                        <li><strong>Added to Gallery:</strong> {{ artwork.created_at|date:"M d, Y" }}</li>
+                    </ul>
+                </div>
+                
+                <!-- Contact for Questions -->
+                <div class="contact-section mt-4 p-3 bg-light rounded">
+                    <h6>Questions about this piece?</h6>
+                    <p class="mb-2">Contact us for more information, shipping details, or to schedule a viewing.</p>
+                    <a href="{% url 'pages:contact' %}?artwork={{ artwork.id }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        Ask a Question
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Artworks -->
+    {% if related_artworks %}
+    <div class="related-artworks mt-5">
+        <div class="row">
+            <div class="col-12">
+                <h3 class="mb-4">More {{ artwork.category.get_name_display }}s</h3>
+            </div>
+        </div>
+        <div class="row">
+            {% for related in related_artworks %}
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="artwork-card">
+                    <div class="artwork-image">
+                        <img src="{{ related.main_image.url }}" 
+                             alt="{{ related.title }}"
+                             class="img-fluid">
+                        <div class="artwork-overlay">
+                            <a href="{% url 'gallery:artwork_detail' related.pk %}" 
+                               class="btn btn-primary btn-sm">View Details</a>
+                        </div>
+                    </div>
+                    <div class="artwork-info">
+                        <h5 class="artwork-title">{{ related.title }}</h5>
+                        <p class="artwork-year">{{ related.artwork_creation_date.year }}</p>
+                        <div class="artwork-pricing">
+                            {% if related.original_available %}
+                            <span class="price">From ${{ related.original_price }}</span>
+                            {% elif related.second_option_available %}
+                            <span class="price">From ${{ related.second_option_price }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Sold</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeMainImage(imageUrl) {
+    document.getElementById('mainArtworkImage').src = imageUrl;
+    
+    // Update active thumbnail
+    document.querySelectorAll('.sculpture-thumb').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+$(document).ready(function() {
+    // Add to cart functionality
+    $('.add-to-cart-btn').on('click', function() {
+        const artworkId = $(this).data('artwork-id');
+        const itemType = $(this).data('item-type');
+        // Will implement in store app
+        alert(`Adding ${itemType} to cart for artwork ${artworkId}`);
+    });
+    
+    // Wishlist functionality
+    $('.wishlist-btn').on('click', function() {
+        const artworkId = $(this).data('artwork-id');
+        // Will implement in accounts app
+        alert(`Adding artwork ${artworkId} to wishlist`);
+    });
+});
+</script>
+
+<style>
+.main-artwork-image {
+    max-height: 600px;
+    width: 100%;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.sculpture-thumb {
+    height: 80px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.sculpture-thumb:hover,
+.sculpture-thumb.active {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.price-option {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.price-option.sold-option {
+    background-color: #f8f9fa;
+    opacity: 0.7;
+}
+
+.price {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.availability {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

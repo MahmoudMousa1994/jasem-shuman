@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center mb-5">
+            <h1 class="page-title">Get in Touch</h1>
+            <p class="lead">
+                Have questions about a piece? Interested in commissioning work? 
+                We'd love to hear from you.
+            </p>
+        </div>
+    </div>
+    
+    {% if success %}
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="alert alert-success text-center">
+                <h4><i class="fas fa-check-circle"></i> Message Sent Successfully!</h4>
+                <p>Thank you for reaching out. We'll get back to you within 24 hours.</p>
+                <a href="{% url 'gallery:home' %}" class="btn btn-primary">Return to Gallery</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <!-- Contact Form -->
+        <div class="col-lg-8">
+            <div class="contact-form-card">
+                <h3 class="mb-4">Send us a Message</h3>
+                <form method="post" class="contact-form">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="contact_type" class="form-label">Inquiry Type</label>
+                            <select class="form-select" id="contact_type" name="contact_type">
+                                <option value="general">General Inquiry</option>
+                                <option value="commission" {% if request.GET.commission %}selected{% endif %}>Commission Request</option>
+                                <option value="media">Media Inquiry</option>
+                                <option value="exhibition">Exhibition Opportunity</option>
+                                <option value="collaboration">Collaboration</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject *</label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               value="{% if artwork_id %}Inquiry about Artwork #{{ artwork_id }}{% endif %}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message *</label>
+                        <textarea class="form-control" id="message" name="message" rows="6" 
+                                  placeholder="Please tell us more about your inquiry..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="col-lg-4">
+            <div class="contact-info-card">
+                <h3 class="mb-4">Contact Information</h3>
+                
+                <div class="contact-item mb-4">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h5>Email</h5>
+                        <p>info@jasemshuman.com</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item mb-4">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h5>Phone</h5>
+                        <p>+970 59 123 4567</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item mb-4">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h5>Studio Location</h5>
+                        <p>Ramallah, Palestine</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item mb-4">
+                    <div class="contact-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h5>Response Time</h5>
+                        <p>Within 24 hours</p>
+                    </div>
+                </div>
+                
+                <div class="social-links mt-4">
+                    <h5>Follow Jasem</h5>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Commission Info -->
+            <div class="commission-info-card mt-4">
+                <h4>Commission Work</h4>
+                <p>
+                    Jasem accepts commissions for both paintings and sculptures. 
+                    Lead time is typically 4-8 weeks depending on the complexity of the piece.
+                </p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Custom paintings</li>
+                    <li><i class="fas fa-check text-success"></i> Sculpture commissions</li>
+                    <li><i class="fas fa-check text-success"></i> Corporate installations</li>
+                    <li><i class="fas fa-check text-success"></i> Portrait work</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.contact-form-card,
+.contact-info-card,
+.commission-info-card {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.contact-icon {
+    background: var(--primary-color);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.contact-details h5 {
+    margin-bottom: 0.25rem;
+    color: var(--primary-color);
+}
+
+.contact-details p {
+    margin-bottom: 0;
+    color: #666;
+}
+
+.social-icons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.commission-info-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.commission-info-card h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.commission-info-card ul li {
+    padding: 0.25rem 0;
+}
+</style>
+{% endblock %}

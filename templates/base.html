@@ -39,10 +39,10 @@
                         <a class="nav-link" href="{% url 'gallery:home' %}">Gallery</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pages:about_artist' %}">About</a>
+                        <a class="nav-link" href="{% url 'pages:about' %}">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'store:cart' %}">Store</a>
+                        <a class="nav-link" href="{% url 'store:home' %}">Store</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'pages:contact' %}">Contact</a>
@@ -54,7 +54,7 @@
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a></li>
-                                <li><a class="dropdown-item" href="{% url 'store:orders' %}">My Orders</a></li>
+                                <li><a class="dropdown-item" href="{% url 'store:order_history' %}">My Orders</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
                             </ul>
@@ -110,9 +110,9 @@
                     <h6 class="mb-3">Quick Links</h6>
                     <ul class="list-unstyled">
                         <li><a href="{% url 'gallery:home' %}" class="text-muted text-decoration-none">Gallery</a></li>
-                        <li><a href="{% url 'pages:about_artist' %}" class="text-muted text-decoration-none">About Artist</a></li>
+                        <li><a href="{% url 'pages:about' %}" class="text-muted text-decoration-none">About Artist</a></li>
                         <li><a href="{% url 'store:cart' %}" class="text-muted text-decoration-none">Store</a></li>
-                        <li><a href="{% url 'pages:about_us' %}" class="text-muted text-decoration-none">About Us</a></li>
+                        <li><a href="{% url 'pages:contact' %}" class="text-muted text-decoration-none">Contact</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
