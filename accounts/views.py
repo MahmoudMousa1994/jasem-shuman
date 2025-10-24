@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -9,15 +9,34 @@ from .forms import UserProfileForm, CustomUserCreationForm
 from gallery.models import Artwork
 
 
+def logout_view(request):
+    """Custom logout view that handles both GET and POST"""
+    if request.method == 'POST':
+        logout(request)
+        messages.success(request, 'You have been successfully logged out.')
+        return redirect('gallery:home')
+    
+    # For GET requests, show confirmation page
+    return render(request, 'accounts/logout.html')
+
+
 def register(request):
     """User registration view"""
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            messages.success(request, 'Welcome to Jasem Shuman Art! Your account has been created.')
-            return redirect('gallery:home')
+            # Authenticate the user with our custom backend
+            authenticated_user = authenticate(
+                request, 
+                username=user.email,  # Using email as username
+                password=form.cleaned_data['password1'],
+                backend='accounts.backends.EmailBackend'
+            )
+            if authenticated_user:
+                login(request, authenticated_user, backend='accounts.backends.EmailBackend')
+                messages.success(request, 'Welcome to Jasem Shuman Art! Your account has been created.')
+                return redirect('gallery:home')
     else:
         form = CustomUserCreationForm()
     

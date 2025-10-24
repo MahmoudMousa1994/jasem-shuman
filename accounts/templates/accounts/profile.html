@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="page-title">My Profile</h1>
+                <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Edit Profile
+                </a>
+            </div>
+            
+            <!-- Profile Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">First Name</label>
+                            <p class="mb-0">{{ user.first_name|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Last Name</label>
+                            <p class="mb-0">{{ user.last_name|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Email Address</label>
+                            <p class="mb-0">{{ user.email }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Phone Number</label>
+                            <p class="mb-0">{{ profile.phone|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted">Address</label>
+                            <p class="mb-0">{{ profile.address|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">City</label>
+                            <p class="mb-0">{{ profile.city|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Country</label>
+                            <p class="mb-0">{{ profile.country|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if profile.bio %}
+                    <div class="mt-3">
+                        <label class="form-label text-muted">Bio</label>
+                        <p class="mb-0">{{ profile.bio|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Account Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Member Since</label>
+                            <p class="mb-0">{{ user.date_joined|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Last Login</label>
+                            <p class="mb-0">{{ user.last_login|date:"F d, Y g:i A"|default:"Never" }}</p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted">Email Verified</label>
+                            <p class="mb-0">
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Verified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Not Verified</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Orders</h5>
+                    <a href="{% url 'store:order_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <div class="list-group list-group-flush">
+                            {% for order in recent_orders %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Order #{{ order.id }}</h6>
+                                        <p class="mb-1 text-muted">{{ order.created_at|date:"F d, Y" }}</p>
+                                        <small class="text-muted">${{ order.total_amount }}</small>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No orders yet. <a href="{% url 'store:home' %}">Start shopping</a> to see your orders here.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Wishlist -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Wishlist</h5>
+                    <a href="{% url 'accounts:wishlist' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if wishlist_items %}
+                        <div class="row">
+                            {% for item in wishlist_items %}
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex">
+                                    <img src="{{ item.artwork.main_image.url }}" 
+                                         alt="{{ item.artwork.title }}" 
+                                         class="img-thumbnail me-3" 
+                                         style="width: 80px; height: 80px; object-fit: cover;">
+                                    <div>
+                                        <h6 class="mb-1">{{ item.artwork.title }}</h6>
+                                        <p class="mb-1 text-muted small">{{ item.get_item_type_display }}</p>
+                                        <small class="text-muted">
+                                            {% if item.item_type == 'original' %}
+                                                ${{ item.artwork.original_price }}
+                                            {% else %}
+                                                ${{ item.artwork.second_option_price }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Your wishlist is empty. <a href="{% url 'gallery:home' %}">Browse artworks</a> to add items to your wishlist.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-pencil"></i> Edit Profile
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'store:order_history' %}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-bag"></i> My Orders
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'accounts:wishlist' %}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-heart"></i> Wishlist
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'store:cart' %}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-cart"></i> View Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.page-title {
+    font-family: 'Playfair Display', serif;
+    color: #1a1a1a;
+}
+
+.img-thumbnail {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+</style>
+{% endblock %}

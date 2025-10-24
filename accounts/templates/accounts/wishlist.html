@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="page-title">My Wishlist</h1>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Profile
+                </a>
+            </div>
+            
+            {% if wishlist_items %}
+                <div class="row">
+                    {% for item in wishlist_items %}
+                    <div class="col-lg-6 mb-4">
+                        <div class="card wishlist-card">
+                            <div class="row g-0">
+                                <div class="col-md-5">
+                                    <img src="{{ item.artwork.main_image.url }}" 
+                                         alt="{{ item.artwork.title }}" 
+                                         class="img-fluid rounded-start wishlist-image">
+                                </div>
+                                <div class="col-md-7">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ item.artwork.title }}</h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-primary">{{ item.get_item_type_display }}</span>
+                                        </p>
+                                        <p class="card-text">
+                                            <strong>
+                                                {% if item.item_type == 'original' %}
+                                                    ${{ item.artwork.original_price }}
+                                                {% else %}
+                                                    ${{ item.artwork.second_option_price }}
+                                                {% endif %}
+                                            </strong>
+                                        </p>
+                                        <p class="card-text">
+                                            <small class="text-muted">
+                                                Added {{ item.created_at|date:"F d, Y" }}
+                                            </small>
+                                        </p>
+                                        
+                                        <div class="btn-group w-100" role="group">
+                                            <a href="{% url 'gallery:artwork_detail' item.artwork.pk %}" 
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            <button class="btn btn-primary btn-sm add-to-cart-btn"
+                                                    data-artwork-id="{{ item.artwork.id }}"
+                                                    data-item-type="{{ item.item_type }}">
+                                                <i class="bi bi-bag"></i> Add to Cart
+                                            </button>
+                                            <a href="{% url 'accounts:remove_from_wishlist' item.id %}" 
+                                               class="btn btn-outline-danger btn-sm"
+                                               onclick="return confirm('Remove this item from your wishlist?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination if needed -->
+                {% if wishlist_items.has_other_pages %}
+                <nav aria-label="Wishlist pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if wishlist_items.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ wishlist_items.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in wishlist_items.paginator.page_range %}
+                            {% if wishlist_items.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if wishlist_items.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ wishlist_items.next_page_number }}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- Empty Wishlist -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-heart display-1 text-muted"></i>
+                    </div>
+                    <h3 class="text-muted mb-3">Your Wishlist is Empty</h3>
+                    <p class="text-muted mb-4">
+                        Start adding artworks to your wishlist to keep track of pieces you love.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'gallery:home' %}" class="btn btn-primary">
+                            <i class="bi bi-palette"></i> Browse Gallery
+                        </a>
+                        <a href="{% url 'store:home' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-shop"></i> Visit Store
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.wishlist-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.wishlist-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.wishlist-image {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.page-title {
+    font-family: 'Playfair Display', serif;
+    color: #1a1a1a;
+}
+
+.card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: #1a1a1a;
+}
+
+.btn-group .btn {
+    flex: 1;
+}
+
+.pagination .page-link {
+    color: #1a1a1a;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #1a1a1a;
+    border-color: #1a1a1a;
+}
+
+.pagination .page-link:hover {
+    color: #d4af37;
+    background-color: #f8f9fa;
+    border-color: #d4af37;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add to cart functionality
+    $('.add-to-cart-btn').on('click', function() {
+        const artworkId = $(this).data('artwork-id');
+        const itemType = $(this).data('item-type');
+        
+        // This will be implemented when we add the cart functionality
+        alert('Add to cart functionality will be implemented in the checkout phase');
+        
+        // Future implementation:
+        // $.post('/store/add-to-cart/', {
+        //     'artwork_id': artworkId,
+        //     'item_type': itemType,
+        //     'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+        // }).done(function(data) {
+        //     if (data.success) {
+        //         // Update cart count and show success message
+        //         $('#cart-count').text(data.cart_count);
+        //         alert(data.message);
+        //     } else {
+        //         alert(data.message);
+        //     }
+        // });
+    });
+});
+</script>
+{% endblock %}
