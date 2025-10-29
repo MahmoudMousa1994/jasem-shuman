@@ -67,9 +67,11 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'store.context_processors.cart_context',
             ],
         },
     },
@@ -152,6 +154,9 @@ AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailBackend',  # Custom email authentication
     'django.contrib.auth.backends.ModelBackend',  # Default username authentication (fallback)
 ]
+
+# CSRF settings
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to access CSRF token
 
 LOGIN_URL = '/account/login/'
 LOGIN_REDIRECT_URL = '/'

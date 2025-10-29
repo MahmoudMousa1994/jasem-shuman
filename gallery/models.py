@@ -105,7 +105,7 @@ class Artwork(TimestampedModel):
         if self.category.name == 'painting':
             return 'Print Copy'
         elif self.category.name == 'sculpture':
-            return 'Signed Photo Set (8 images)'
+            return 'Signed Photo Set'
         return 'Second Option'
     
     @property

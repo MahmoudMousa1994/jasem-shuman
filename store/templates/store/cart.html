@@ -4,6 +4,7 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="container py-5">
     <div class="row">
         <div class="col-lg-8">
@@ -14,44 +15,53 @@
                 <div class="card-body">
                     <!-- Cart Items -->
                     <div id="cart-items">
-                        {% comment %}
-                        <!-- Example cart item -->
-                        <div class="row align-items-center border-bottom py-3">
-                            <div class="col-md-2">
-                                <img src="{% static 'images/placeholder-artwork.jpg' %}" alt="Artwork" class="img-fluid rounded">
-                            </div>
-                            <div class="col-md-4">
-                                <h5 class="mb-1">Artwork Title</h5>
-                                <p class="text-muted mb-0">Medium: Oil on Canvas</p>
-                                <p class="text-muted mb-0">Size: 24" x 36"</p>
-                            </div>
-                            <div class="col-md-2">
-                                <div class="input-group input-group-sm">
-                                    <button class="btn btn-outline-secondary" type="button">-</button>
-                                    <input type="number" class="form-control text-center" value="1" min="1">
-                                    <button class="btn btn-outline-secondary" type="button">+</button>
+                        {% if cart_items %}
+                            {% for item in cart_items %}
+                            <div class="row align-items-center border-bottom py-3 cart-item" data-item-id="{{ item.id }}">
+                                <div class="col-md-2">
+                                    <img src="{{ item.artwork.main_image.url }}" alt="{{ item.artwork.title }}" class="img-fluid rounded">
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 class="mb-1">{{ item.artwork.title }}</h5>
+                                    <p class="text-muted mb-0">{{ item.artwork.category.get_name_display }}</p>
+                                    <p class="text-muted mb-0">
+                                        {% if item.item_type == 'original' %}
+                                            Original Artwork
+                                        {% else %}
+                                            {{ item.artwork.second_option_name }}
+                                        {% endif %}
+                                    </p>
+                                    <small class="text-muted">{{ item.artwork.artwork_creation_date.year }}</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="input-group input-group-sm">
+                                        <button class="btn btn-outline-secondary qty-decrease" type="button" data-item-id="{{ item.id }}">-</button>
+                                        <input type="number" class="form-control text-center item-quantity" value="{{ item.quantity }}" min="1" max="10" data-item-id="{{ item.id }}">
+                                        <button class="btn btn-outline-secondary qty-increase" type="button" data-item-id="{{ item.id }}">+</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong class="item-price">${{ item.total_price }}</strong>
+                                    <small class="d-block text-muted">${{ item.price }} each</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-danger btn-sm remove-item" data-item-id="{{ item.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <strong>$1,250.00</strong>
+                            {% endfor %}
+                        {% else %}
+                            <!-- Empty cart message -->
+                            <div class="text-center py-5" id="empty-cart">
+                                <i class="bi bi-bag text-muted" style="font-size: 3rem;"></i>
+                                <h4>Your cart is empty</h4>
+                                <p class="text-muted">Browse our gallery to discover amazing artworks</p>
+                                <a href="{% url 'gallery:home' %}" class="btn btn-primary">
+                                    <i class="bi bi-palette me-2"></i>Browse Gallery
+                                </a>
                             </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-outline-danger btn-sm">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        {% endcomment %}
-                        
-                        <!-- Empty cart message -->
-                        <div class="text-center py-5" id="empty-cart">
-                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                            <h4>Your cart is empty</h4>
-                            <p class="text-muted">Browse our gallery to discover amazing artworks</p>
-                            <a href="{% url 'gallery:home' %}" class="btn btn-primary">
-                                <i class="fas fa-palette me-2"></i>Browse Gallery
-                            </a>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -65,11 +75,19 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal:</span>
-                        <span id="subtotal">$0.00</span>
+                        <span id="subtotal">${{ cart_total|default:"0.00" }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Shipping:</span>
-                        <span id="shipping">$0.00</span>
+                        <span id="shipping">
+                            {% if cart_total >= 500 %}
+                                Free
+                            {% elif cart_total > 0 %}
+                                $50.00
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Tax:</span>
@@ -78,15 +96,29 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-3">
                         <strong>Total:</strong>
-                        <strong id="total">$0.00</strong>
+                        <strong id="total">
+                            {% if cart_total >= 500 %}
+                                ${{ cart_total }}
+                            {% elif cart_total > 0 %}
+                                ${{ cart_total|add:50 }}
+                            {% else %}
+                                $0.00
+                            {% endif %}
+                        </strong>
                     </div>
                     
                     <div class="d-grid gap-2">
-                        <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-lg" id="checkout-btn" style="display: none;">
-                            <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                        {% if cart_items %}
+                        <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-lg" id="checkout-btn">
+                            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
                         </a>
+                        {% else %}
+                        <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-lg" id="checkout-btn" style="display: none;">
+                            <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                        </a>
+                        {% endif %}
                         <a href="{% url 'gallery:home' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                            <i class="bi bi-arrow-left me-2"></i>Continue Shopping
                         </a>
                     </div>
                 </div>
@@ -136,64 +168,178 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Cart functionality will be implemented here
-    updateCartDisplay();
+    // Quantity controls
+    document.querySelectorAll('.qty-increase').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const input = document.querySelector(`input[data-item-id="${itemId}"]`);
+            const currentQty = parseInt(input.value);
+            if (currentQty < 10) {
+                updateItemQuantity(itemId, currentQty + 1);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.qty-decrease').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const input = document.querySelector(`input[data-item-id="${itemId}"]`);
+            const currentQty = parseInt(input.value);
+            if (currentQty > 1) {
+                updateItemQuantity(itemId, currentQty - 1);
+            }
+        });
+    });
+    
+    // Quantity input change
+    document.querySelectorAll('.item-quantity').forEach(input => {
+        input.addEventListener('change', function() {
+            const itemId = this.dataset.itemId;
+            let qty = parseInt(this.value);
+            if (qty < 1) qty = 1;
+            if (qty > 10) qty = 10;
+            this.value = qty;
+            updateItemQuantity(itemId, qty);
+        });
+    });
+    
+    // Remove item buttons
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            removeFromCart(itemId);
+        });
+    });
 });
 
-function updateCartDisplay() {
-    // Placeholder for cart update logic
-    const cartItems = []; // This will be populated from backend
+function updateItemQuantity(itemId, quantity) {
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
-    if (cartItems.length === 0) {
-        document.getElementById('empty-cart').style.display = 'block';
-        document.getElementById('checkout-btn').style.display = 'none';
-    } else {
-        document.getElementById('empty-cart').style.display = 'none';
-        document.getElementById('checkout-btn').style.display = 'block';
-    }
-}
-
-function updateQuantity(itemId, newQuantity) {
-    // AJAX call to update quantity
-    fetch('/store/update-cart/', {
+    fetch('{% url "store:update_cart" %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({
             item_id: itemId,
-            quantity: newQuantity
+            quantity: quantity
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            updateCartDisplay();
+            // Update the input value
+            const input = document.querySelector(`input[data-item-id="${itemId}"]`);
+            input.value = quantity;
+            
+            // Update item total price
+            const itemPrice = document.querySelector(`[data-item-id="${itemId}"]`).closest('.cart-item').querySelector('.item-price');
+            itemPrice.textContent = '$' + data.item_total.toFixed(2);
+            
+            // Update cart totals
+            updateCartTotals(data.cart_total, data.cart_total_items);
+            
+            // Update navigation cart count
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) {
+                cartCount.textContent = data.cart_total_items;
+            }
+        } else {
+            showMessage(data.message, 'error');
         }
+    })
+    .catch(error => {
+        showMessage('An error occurred updating the cart.', 'error');
     });
 }
 
 function removeFromCart(itemId) {
-    // AJAX call to remove item
-    if (confirm('Are you sure you want to remove this item from your cart?')) {
-        fetch('/store/remove-from-cart/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify({
-                item_id: itemId
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateCartDisplay();
-            }
-        });
+    if (!confirm('Are you sure you want to remove this item from your cart?')) {
+        return;
     }
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('{% url "store:remove_cart" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            item_id: itemId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the item from DOM
+            const cartItem = document.querySelector(`[data-item-id="${itemId}"]`).closest('.cart-item');
+            cartItem.remove();
+            
+            // Update cart totals
+            updateCartTotals(data.cart_total, data.cart_total_items);
+            
+            // Update navigation cart count
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) {
+                cartCount.textContent = data.cart_total_items;
+            }
+            
+            // Show empty cart if no items left
+            if (data.cart_total_items === 0) {
+                location.reload(); // Reload to show empty cart message
+            }
+            
+            showMessage(data.message, 'success');
+        } else {
+            showMessage(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('An error occurred removing the item.', 'error');
+    });
+}
+
+function updateCartTotals(cartTotal, cartTotalItems) {
+    document.getElementById('subtotal').textContent = '$' + cartTotal.toFixed(2);
+    
+    // Update shipping
+    const shipping = document.getElementById('shipping');
+    if (cartTotal >= 500) {
+        shipping.textContent = 'Free';
+        document.getElementById('total').textContent = '$' + cartTotal.toFixed(2);
+    } else if (cartTotal > 0) {
+        shipping.textContent = '$50.00';
+        document.getElementById('total').textContent = '$' + (cartTotal + 50).toFixed(2);
+    } else {
+        shipping.textContent = '$0.00';
+        document.getElementById('total').textContent = '$0.00';
+    }
+}
+
+function showMessage(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const messageHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', messageHtml);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            alert.remove();
+        }
+    }, 3000);
 }
 </script>
 {% endblock %}

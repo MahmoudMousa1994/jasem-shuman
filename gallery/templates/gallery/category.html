@@ -75,8 +75,17 @@
                                    class="btn btn-primary btn-sm">View Details</a>
                                 {% if artwork.original_available or artwork.second_option_available %}
                                 <button class="btn btn-outline-light btn-sm ms-2 add-to-cart-btn"
-                                        data-artwork-id="{{ artwork.id }}">
-                                    Quick Add
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#addToCartModal"
+                                        data-artwork-id="{{ artwork.id }}"
+                                        data-artwork-title="{{ artwork.title }}"
+                                        data-artwork-image="{{ artwork.main_image.url }}"
+                                        data-original-available="{{ artwork.original_available }}"
+                                        data-original-price="{{ artwork.original_price }}"
+                                        data-second-available="{{ artwork.second_option_available }}"
+                                        data-second-name="{{ artwork.second_option_name }}"
+                                        data-second-price="{{ artwork.second_option_price }}">
+                                    Add to Cart
                                 </button>
                                 {% endif %}
                             </div>
@@ -247,13 +256,280 @@ $(document).ready(function() {
         $('#artworksGrid').addClass('d-none');
     });
     
-    // Add to cart functionality
+    // Add to cart functionality - using modal from gallery home
     $('.add-to-cart-btn').on('click', function() {
-        const artworkId = $(this).data('artwork-id');
-        // Will implement in store app
-        alert('Add to cart functionality will be implemented in the checkout phase');
+        // Modal functionality is handled by Bootstrap and the gallery modal code
+        console.log('Add to cart modal will open for artwork:', $(this).data('artwork-id'));
     });
 });
+</script>
+
+<!-- Add to Cart Modal -->
+<div class="modal fade" id="addToCartModal" tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToCartModalLabel">Add to Cart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Artwork Image -->
+                        <div class="col-md-5">
+                            <img id="modalArtworkImage" src="" alt="Artwork" class="img-fluid rounded shadow-sm">
+                        </div>
+                        
+                        <!-- Purchase Options -->
+                        <div class="col-md-7">
+                            <h4 id="modalArtworkTitle" class="mb-3"></h4>
+                            
+                            <!-- Purchase Type Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select Purchase Type:</label>
+                                <div id="purchaseOptions">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <!-- Quantity Selection -->
+                            <div class="mb-4">
+                                <label for="quantity" class="form-label fw-bold">Quantity:</label>
+                                <div class="input-group" style="max-width: 150px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="decreaseQty">-</button>
+                                    <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="10">
+                                    <button class="btn btn-outline-secondary" type="button" id="increaseQty">+</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Summary -->
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Item Price:</span>
+                                        <span id="itemPrice">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Quantity:</span>
+                                        <span id="itemQuantity">1</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total:</span>
+                                        <span id="totalPrice">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAddToCart">
+                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add to cart modal functionality
+$(document).ready(function() {
+    let currentArtwork = null;
+    let selectedType = 'original';
+    
+    // Handle modal show event
+    $('#addToCartModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        
+        // Extract data from button
+        currentArtwork = {
+            id: button.data('artwork-id'),
+            title: button.data('artwork-title'),
+            image: button.data('artwork-image'),
+            originalAvailable: button.data('original-available'),
+            originalPrice: parseFloat(button.data('original-price')) || 0,
+            secondAvailable: button.data('second-available'),
+            secondName: button.data('second-name'),
+            secondPrice: parseFloat(button.data('second-price')) || 0
+        };
+        
+        // Update modal content
+        $('#modalArtworkTitle').text(currentArtwork.title);
+        $('#modalArtworkImage').attr('src', currentArtwork.image);
+        
+        // Generate purchase options
+        let optionsHtml = '';
+        
+        if (currentArtwork.originalAvailable && currentArtwork.originalPrice > 0) {
+            optionsHtml += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="purchaseType" id="originalOption" value="original" checked>
+                    <label class="form-check-label" for="originalOption">
+                        <strong>Original Artwork</strong> - $${currentArtwork.originalPrice.toFixed(2)}
+                        <br><small class="text-muted">One-of-a-kind original piece</small>
+                    </label>
+                </div>
+            `;
+            selectedType = 'original';
+        }
+        
+        if (currentArtwork.secondAvailable && currentArtwork.secondPrice > 0) {
+            const isChecked = !currentArtwork.originalAvailable || currentArtwork.originalPrice <= 0;
+            optionsHtml += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="purchaseType" id="secondOption" value="second" ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label" for="secondOption">
+                        <strong>${currentArtwork.secondName}</strong> - $${currentArtwork.secondPrice.toFixed(2)}
+                        <br><small class="text-muted">High-quality reproduction</small>
+                    </label>
+                </div>
+            `;
+            if (isChecked) selectedType = 'second';
+        }
+        
+        $('#purchaseOptions').html(optionsHtml);
+        
+        // Update pricing
+        updatePricing();
+    });
+    
+    // Handle purchase type change
+    $(document).on('change', 'input[name="purchaseType"]', function() {
+        selectedType = $(this).val();
+        updatePricing();
+    });
+    
+    // Handle quantity changes
+    $('#decreaseQty').click(function() {
+        const qty = parseInt($('#quantity').val());
+        if (qty > 1) {
+            $('#quantity').val(qty - 1);
+            updatePricing();
+        }
+    });
+    
+    $('#increaseQty').click(function() {
+        const qty = parseInt($('#quantity').val());
+        if (qty < 10) {
+            $('#quantity').val(qty + 1);
+            updatePricing();
+        }
+    });
+    
+    $('#quantity').on('input', function() {
+        updatePricing();
+    });
+    
+    function updatePricing() {
+        const quantity = parseInt($('#quantity').val()) || 1;
+        let unitPrice = 0;
+        
+        if (selectedType === 'original') {
+            unitPrice = currentArtwork.originalPrice;
+        } else if (selectedType === 'second') {
+            unitPrice = currentArtwork.secondPrice;
+        }
+        
+        const total = unitPrice * quantity;
+        
+        $('#itemPrice').text(`$${unitPrice.toFixed(2)}`);
+        $('#itemQuantity').text(quantity);
+        $('#totalPrice').text(`$${total.toFixed(2)}`);
+    }
+    
+    // Handle add to cart confirmation
+    $('#confirmAddToCart').click(function() {
+        const button = $(this);
+        const originalText = button.html();
+        
+        // Show loading state
+        button.html('<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
+        button.prop('disabled', true);
+        
+        // Prepare data
+        const data = {
+            artwork_id: currentArtwork.id,
+            item_type: selectedType,
+            quantity: parseInt($('#quantity').val()) || 1
+        };
+        
+        // Make AJAX request
+        $.ajax({
+            url: '/store/add-to-cart/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+            success: function(data) {
+                if (data.success) {
+                    // Update cart count
+                    if ($('#cart-count').length) {
+                        $('#cart-count').text(data.cart_total_items || 0);
+                    }
+                    
+                    // Show success message
+                    showMessage(data.message, 'success');
+                    
+                    // Close modal
+                    $('#addToCartModal').modal('hide');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            },
+            error: function() {
+                showMessage('An error occurred. Please try again.', 'error');
+            },
+            complete: function() {
+                // Reset button
+                button.html(originalText);
+                button.prop('disabled', false);
+            }
+        });
+    });
+});
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Message system
+function showMessage(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.top = '100px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
 </script>
 
 <style>

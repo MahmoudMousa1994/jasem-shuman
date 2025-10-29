@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Jasem Shuman - Artist{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
@@ -79,7 +80,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'store:cart' %}">
                             <i class="bi bi-bag"></i>
-                            <span class="badge bg-dark" id="cart-count">0</span>
+                            <span class="badge bg-dark" id="cart-count">{{ cart_count|default:0 }}</span>
                         </a>
                     </li>
                 </ul>
@@ -155,11 +156,45 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
     <!-- Custom JavaScript -->
     <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Cart counter update script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to fetch and update cart count
+        function updateCartCount() {
+            fetch('/store/get-cart-count/', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement && data.cart_count !== undefined) {
+                    cartCountElement.textContent = data.cart_count;
+                }
+            })
+            .catch(error => {
+                console.log('Cart count update failed:', error);
+            });
+        }
+        
+        // Update cart count on page load
+        updateCartCount();
+        
+        // Also update every 30 seconds (optional, for real-time sync)
+        // setInterval(updateCartCount, 30000);
+    });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

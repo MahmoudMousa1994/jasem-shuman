@@ -4,28 +4,21 @@
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section bg-primary text-white py-5">
+<!-- Store Hero Section -->
+<section class="hero-section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Art Store</h1>
-                <p class="lead mb-4">
-                    Discover and purchase original Palestinian artworks, sculptures, and limited edition prints. 
-                    Each piece tells a story of culture, heritage, and artistic excellence.
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="hero-title">Art Store</h1>
+                <h2 class="hero-subtitle">Original Palestinian Artworks & Sculptures</h2>
+                <p class="hero-description">
+                    Discover and purchase authentic Palestinian artworks, original sculptures, 
+                    and limited edition prints. Each piece carries the story of Palestinian culture, 
+                    heritage, and artistic excellence from internationally acclaimed artist Jasem Shuman.
                 </p>
-                <div class="d-flex gap-3">
-                    <a href="#featured-artworks" class="btn btn-light btn-lg">
-                        <i class="fas fa-palette me-2"></i>Browse Collection
-                    </a>
-                    <a href="{% url 'store:cart' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-shopping-cart me-2"></i>View Cart
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="text-center">
-                    <i class="fas fa-store fa-5x opacity-75"></i>
+                <div class="hero-buttons">
+                    <a href="#featured-artworks" class="btn btn-primary btn-lg me-3">Browse Collection</a>
+                    <a href="{% url 'store:cart' %}" class="btn btn-outline-primary btn-lg">View Cart</a>
                 </div>
             </div>
         </div>
@@ -33,34 +26,30 @@
 </section>
 
 <!-- Categories Section -->
-<section class="py-5">
+<section class="categories-section py-5">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-6 fw-bold mb-3">Shop by Category</h2>
-            <p class="lead text-muted">Explore our diverse collection of artistic expressions</p>
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-title">Shop by Collection</h2>
+                <p class="section-subtitle">
+                    Explore our diverse range of artistic expressions, from large-scale sculptures 
+                    to intimate paintings, each telling a unique Palestinian story
+                </p>
+            </div>
         </div>
         
-        <div class="row g-4">
+        <div class="row">
             {% for category in categories %}
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm category-card">
-                    <div class="card-body text-center">
-                        <div class="category-icon mb-3">
-                            {% if category.name == "Paintings" %}
-                                <i class="fas fa-palette fa-3x text-primary"></i>
-                            {% elif category.name == "Sculptures" %}
-                                <i class="fas fa-chess-rook fa-3x text-success"></i>
-                            {% elif category.name == "Drawings" %}
-                                <i class="fas fa-pencil-alt fa-3x text-warning"></i>
-                            {% else %}
-                                <i class="fas fa-image fa-3x text-info"></i>
-                            {% endif %}
+            <div class="col-md-6 mb-4">
+                <div class="category-card store-category">
+                    <div class="category-content">
+                        <h3 class="category-title">{{ category.get_name_display }}</h3>
+                        <p class="category-description">{{ category.description|default:"Explore our collection of authentic Palestinian art" }}</p>
+                        <div class="category-stats">
+                            <span class="artwork-count">{{ category.artwork_set.count }} artwork{{ category.artwork_set.count|pluralize }}</span>
                         </div>
-                        <h5 class="card-title">{{ category.name }}</h5>
-                        <p class="card-text text-muted">{{ category.description|default:"Explore our collection" }}</p>
-                        <a href="{% url 'gallery:category' category.id %}" class="btn btn-outline-primary">
-                            Browse {{ category.name }}
-                            <i class="fas fa-arrow-right ms-2"></i>
+                        <a href="{% url 'gallery:category' category.name %}" class="btn btn-outline-primary btn-sm">
+                            Browse {{ category.get_name_display }}
                         </a>
                     </div>
                 </div>
@@ -68,7 +57,7 @@
             {% empty %}
             <div class="col-12">
                 <div class="text-center py-5">
-                    <p class="text-muted">Categories will be displayed here once added.</p>
+                    <p class="text-muted">Collections will be displayed here once artworks are added.</p>
                 </div>
             </div>
             {% endfor %}
@@ -77,257 +66,416 @@
 </section>
 
 <!-- Featured Artworks Section -->
-<section class="py-5 bg-light" id="featured-artworks">
+<section class="featured-works py-5 bg-light" id="featured-artworks">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="display-6 fw-bold mb-3">Featured Artworks</h2>
-            <p class="lead text-muted">Handpicked pieces available for purchase</p>
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-title">Available Artworks</h2>
+                <p class="section-subtitle">
+                    Original pieces and limited editions available for purchase
+                </p>
+            </div>
         </div>
         
-        <div class="row g-4">
+        {% if featured_artworks %}
+        <div class="row">
             {% for artwork in featured_artworks %}
-            <div class="col-md-6 col-lg-3">
-                <div class="card h-100 shadow-sm artwork-card">
-                    <div class="position-relative">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="artwork-card store-artwork">
+                    <div class="artwork-image">
                         {% if artwork.main_image %}
-                            <img src="{{ artwork.main_image.url }}" class="card-img-top" alt="{{ artwork.title }}" style="height: 250px; object-fit: cover;">
+                            <img src="{{ artwork.main_image.url }}" 
+                                 alt="{{ artwork.title }}"
+                                 class="store-artwork-img">
                         {% else %}
-                            <div class="placeholder-image d-flex align-items-center justify-content-center bg-light" style="height: 250px;">
-                                <i class="fas fa-image fa-3x text-muted"></i>
+                            <div class="placeholder-image">
+                                <span>No Image</span>
                             </div>
                         {% endif %}
                         
-                        <!-- Price Badge -->
-                        {% if artwork.original_price %}
-                        <span class="position-absolute top-0 end-0 badge bg-dark m-2">
-                            ${{ artwork.original_price|floatformat:0 }}
-                        </span>
-                        {% endif %}
-                        
-                        <!-- Availability Badge -->
+                        <!-- Availability Overlay -->
                         {% if not artwork.original_available %}
-                        <span class="position-absolute top-0 start-0 badge bg-danger m-2">
-                            Sold
-                        </span>
+                        <div class="availability-overlay">
+                            <span class="sold-badge">Sold</span>
+                        </div>
                         {% endif %}
                     </div>
                     
-                    <div class="card-body d-flex flex-column">
-                        <h6 class="card-title">{{ artwork.title }}</h6>
-                        <p class="card-text text-muted small mb-2">
-                            {{ artwork.category }} • {{ artwork.original_dimensions_display }}
-                        </p>
-                        <p class="card-text flex-grow-1">
-                            {{ artwork.description|truncatewords:15 }}
-                        </p>
+                    <div class="artwork-info">
+                        <h4 class="artwork-title">{{ artwork.title }}</h4>
+                        <p class="artwork-year">{{ artwork.artwork_creation_date.year }}</p>
+                        <p class="artwork-dimensions">{{ artwork.original_dimensions_display }}</p>
                         
-                        <div class="d-grid gap-2 mt-auto">
-                            <a href="{% url 'gallery:artwork_detail' artwork.id %}" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-1"></i>View Details
-                            </a>
+                        <div class="artwork-pricing">
                             {% if artwork.original_available and artwork.original_price %}
-                            <button class="btn btn-primary btn-sm add-to-cart-btn" data-artwork-id="{{ artwork.id }}">
-                                <i class="fas fa-cart-plus me-1"></i>Add to Cart
-                            </button>
-                            {% else %}
-                            <button class="btn btn-secondary btn-sm" disabled>
-                                <i class="fas fa-ban me-1"></i>Not Available
+                            <div class="price-option">
+                                <span class="price-label">Original:</span>
+                                <span class="price">${{ artwork.original_price }}</span>
+                            </div>
+                            {% endif %}
+                            {% if artwork.second_option_available and artwork.second_option_price %}
+                            <div class="price-option">
+                                <span class="price-label">{{ artwork.second_option_name }}:</span>
+                                <span class="price">${{ artwork.second_option_price }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="artwork-actions">
+                            <a href="{% url 'gallery:artwork_detail' artwork.id %}" 
+                               class="btn btn-outline-primary btn-sm">View Details</a>
+                            {% if artwork.original_available or artwork.second_option_available %}
+                            <button class="btn btn-primary btn-sm add-to-cart-btn ms-2"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#addToCartModal"
+                                    data-artwork-id="{{ artwork.id }}"
+                                    data-artwork-title="{{ artwork.title }}"
+                                    data-artwork-image="{{ artwork.main_image.url }}"
+                                    data-original-available="{{ artwork.original_available }}"
+                                    data-original-price="{{ artwork.original_price }}"
+                                    data-second-available="{{ artwork.second_option_available }}"
+                                    data-second-name="{{ artwork.second_option_name }}"
+                                    data-second-price="{{ artwork.second_option_price }}">
+                                Add to Cart
                             </button>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-12">
-                <div class="text-center py-5">
-                    <i class="fas fa-palette fa-3x text-muted mb-3"></i>
-                    <h4>No featured artworks yet</h4>
-                    <p class="text-muted">Featured artworks will be displayed here once added.</p>
-                    <a href="{% url 'gallery:home' %}" class="btn btn-primary">
-                        <i class="fas fa-images me-2"></i>Browse All Artworks
-                    </a>
-                </div>
-            </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="text-center py-5">
+            <h4>No artworks available for purchase yet</h4>
+            <p class="text-muted mb-4">Please check back soon for new additions to our collection.</p>
+            <a href="{% url 'gallery:home' %}" class="btn btn-primary">
+                Browse Gallery
+            </a>
+        </div>
+        {% endif %}
         
         {% if featured_artworks %}
         <div class="text-center mt-5">
             <a href="{% url 'gallery:home' %}" class="btn btn-outline-primary btn-lg">
-                <i class="fas fa-images me-2"></i>View All Artworks
+                View Complete Gallery
             </a>
         </div>
         {% endif %}
     </div>
 </section>
 
-<!-- Store Features Section -->
-<section class="py-5">
+<!-- Store Information Section -->
+<section class="store-info py-5">
     <div class="container">
-        <div class="row g-4 text-center">
-            <div class="col-md-3">
-                <div class="feature-item">
-                    <i class="fas fa-shipping-fast fa-3x text-primary mb-3"></i>
-                    <h5>Free Shipping</h5>
-                    <p class="text-muted">On orders over $500</p>
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h3 class="section-title">Why Choose Our Art</h3>
+                <p class="section-subtitle">
+                    Every purchase supports Palestinian artists and helps preserve cultural heritage
+                </p>
+            </div>
+        </div>
+        
+        <div class="row text-center mt-5">
+            <div class="col-md-3 mb-4">
+                <div class="info-item">
+                    <div class="info-icon">🎨</div>
+                    <h5>Authentic Art</h5>
+                    <p class="text-muted">Original works by acclaimed Palestinian artist</p>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="feature-item">
-                    <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
-                    <h5>Secure Payment</h5>
-                    <p class="text-muted">SSL encrypted checkout</p>
+            <div class="col-md-3 mb-4">
+                <div class="info-item">
+                    <div class="info-icon">🏆</div>
+                    <h5>Award Winning</h5>
+                    <p class="text-muted">Internationally recognized and exhibited</p>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="feature-item">
-                    <i class="fas fa-undo fa-3x text-info mb-3"></i>
-                    <h5>30-Day Returns</h5>
-                    <p class="text-muted">Satisfaction guaranteed</p>
+            <div class="col-md-3 mb-4">
+                <div class="info-item">
+                    <div class="info-icon">📜</div>
+                    <h5>Certificate</h5>
+                    <p class="text-muted">Comes with authenticity documentation</p>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="feature-item">
-                    <i class="fas fa-certificate fa-3x text-warning mb-3"></i>
-                    <h5>Authenticity</h5>
-                    <p class="text-muted">Original artworks only</p>
+            <div class="col-md-3 mb-4">
+                <div class="info-item">
+                    <div class="info-icon">🚚</div>
+                    <h5>Secure Shipping</h5>
+                    <p class="text-muted">Professional packaging and insured delivery</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
 
-<style>
-.hero-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
+<!-- Add to Cart Modal -->
+<div class="modal fade" id="addToCartModal" tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToCartModalLabel">Add to Cart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Artwork Image -->
+                        <div class="col-md-5">
+                            <img id="modalArtworkImage" src="" alt="Artwork" class="img-fluid rounded shadow-sm">
+                        </div>
+                        
+                        <!-- Purchase Options -->
+                        <div class="col-md-7">
+                            <h4 id="modalArtworkTitle" class="mb-3"></h4>
+                            
+                            <!-- Purchase Type Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select Purchase Type:</label>
+                                <div id="purchaseOptions">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <!-- Quantity Selection -->
+                            <div class="mb-4">
+                                <label for="quantity" class="form-label fw-bold">Quantity:</label>
+                                <div class="input-group" style="max-width: 150px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="decreaseQty">-</button>
+                                    <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="10">
+                                    <button class="btn btn-outline-secondary" type="button" id="increaseQty">+</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Summary -->
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Item Price:</span>
+                                        <span id="itemPrice">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Quantity:</span>
+                                        <span id="itemQuantity">1</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total:</span>
+                                        <span id="totalPrice">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAddToCart">
+                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-.category-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-}
-
-.category-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-.artwork-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-}
-
-.artwork-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-.feature-item {
-    padding: 2rem 1rem;
-}
-
-.feature-item i {
-    transition: transform 0.3s ease;
-}
-
-.feature-item:hover i {
-    transform: scale(1.1);
-}
-
-.add-to-cart-btn {
-    transition: all 0.3s ease;
-}
-
-.add-to-cart-btn:hover {
-    transform: translateY(-1px);
-}
-
-.placeholder-image {
-    background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%), 
-                linear-gradient(-45deg, #f8f9fa 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #f8f9fa 75%), 
-                linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
-    background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-}
-</style>
-
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add to cart functionality
-    const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+$(document).ready(function() {
+    let currentArtwork = null;
+    let selectedType = 'original';
     
-    addToCartButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const artworkId = this.getAttribute('data-artwork-id');
-            addToCart(artworkId, this);
+    // Handle modal show event
+    $('#addToCartModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        
+        // Extract data from button
+        currentArtwork = {
+            id: button.data('artwork-id'),
+            title: button.data('artwork-title'),
+            image: button.data('artwork-image'),
+            originalAvailable: button.data('original-available'),
+            originalPrice: parseFloat(button.data('original-price')) || 0,
+            secondAvailable: button.data('second-available'),
+            secondName: button.data('second-name'),
+            secondPrice: parseFloat(button.data('second-price')) || 0
+        };
+        
+        // Update modal content
+        $('#modalArtworkTitle').text(currentArtwork.title);
+        $('#modalArtworkImage').attr('src', currentArtwork.image);
+        
+        // Generate purchase options
+        let optionsHtml = '';
+        
+        if (currentArtwork.originalAvailable && currentArtwork.originalPrice > 0) {
+            optionsHtml += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="purchaseType" id="originalOption" value="original" checked>
+                    <label class="form-check-label" for="originalOption">
+                        <strong>Original Artwork</strong> - $${currentArtwork.originalPrice.toFixed(2)}
+                        <br><small class="text-muted">One-of-a-kind original piece</small>
+                    </label>
+                </div>
+            `;
+            selectedType = 'original';
+        }
+        
+        if (currentArtwork.secondAvailable && currentArtwork.secondPrice > 0) {
+            const isChecked = !currentArtwork.originalAvailable || currentArtwork.originalPrice <= 0;
+            optionsHtml += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="purchaseType" id="secondOption" value="second" ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label" for="secondOption">
+                        <strong>${currentArtwork.secondName}</strong> - $${currentArtwork.secondPrice.toFixed(2)}
+                        <br><small class="text-muted">High-quality reproduction</small>
+                    </label>
+                </div>
+            `;
+            if (isChecked) selectedType = 'second';
+        }
+        
+        $('#purchaseOptions').html(optionsHtml);
+        
+        // Update pricing
+        updatePricing();
+    });
+    
+    // Handle purchase type change
+    $(document).on('change', 'input[name="purchaseType"]', function() {
+        selectedType = $(this).val();
+        updatePricing();
+    });
+    
+    // Handle quantity changes
+    $('#decreaseQty').click(function() {
+        const qty = parseInt($('#quantity').val());
+        if (qty > 1) {
+            $('#quantity').val(qty - 1);
+            updatePricing();
+        }
+    });
+    
+    $('#increaseQty').click(function() {
+        const qty = parseInt($('#quantity').val());
+        if (qty < 10) {
+            $('#quantity').val(qty + 1);
+            updatePricing();
+        }
+    });
+    
+    $('#quantity').on('input', function() {
+        updatePricing();
+    });
+    
+    function updatePricing() {
+        const quantity = parseInt($('#quantity').val()) || 1;
+        let unitPrice = 0;
+        
+        if (selectedType === 'original') {
+            unitPrice = currentArtwork.originalPrice;
+        } else if (selectedType === 'second') {
+            unitPrice = currentArtwork.secondPrice;
+        }
+        
+        const total = unitPrice * quantity;
+        
+        $('#itemPrice').text(`$${unitPrice.toFixed(2)}`);
+        $('#itemQuantity').text(quantity);
+        $('#totalPrice').text(`$${total.toFixed(2)}`);
+    }
+    
+    // Handle add to cart confirmation
+    $('#confirmAddToCart').click(function() {
+        const button = $(this);
+        const originalText = button.html();
+        
+        // Show loading state
+        button.html('<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
+        button.prop('disabled', true);
+        
+        // Prepare data
+        const data = {
+            artwork_id: currentArtwork.id,
+            item_type: selectedType,
+            quantity: parseInt($('#quantity').val()) || 1
+        };
+        
+        // Make AJAX request
+        $.ajax({
+            url: '/store/add-to-cart/',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(data),
+            success: function(data) {
+                if (data.success) {
+                    // Update cart count
+                    if ($('#cart-count').length) {
+                        $('#cart-count').text(data.cart_total_items || 0);
+                    }
+                    
+                    // Show success message
+                    showMessage(data.message, 'success');
+                    
+                    // Close modal
+                    $('#addToCartModal').modal('hide');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            },
+            error: function() {
+                showMessage('An error occurred. Please try again.', 'error');
+            },
+            complete: function() {
+                // Reset button
+                button.html(originalText);
+                button.prop('disabled', false);
+            }
         });
     });
 });
 
-function addToCart(artworkId, button) {
-    // Store original button content
-    const originalContent = button.innerHTML;
-    
-    // Show loading state
-    button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Adding...';
-    button.disabled = true;
-    
-    // Make AJAX request
-    fetch('{% url "store:add_to_cart" %}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            artwork_id: artworkId,
-            quantity: 1
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Show success state
-            button.innerHTML = '<i class="fas fa-check me-1"></i>Added!';
-            button.classList.remove('btn-primary');
-            button.classList.add('btn-success');
-            
-            // Update cart count if displayed
-            updateCartCount();
-            
-            // Reset button after 2 seconds
-            setTimeout(() => {
-                button.innerHTML = originalContent;
-                button.classList.remove('btn-success');
-                button.classList.add('btn-primary');
-                button.disabled = false;
-            }, 2000);
-        } else {
-            // Show error state
-            button.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
-            button.classList.add('btn-danger');
-            
-            // Reset button after 2 seconds
-            setTimeout(() => {
-                button.innerHTML = originalContent;
-                button.classList.remove('btn-danger');
-                button.disabled = false;
-            }, 2000);
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        // Reset button on error
-        button.innerHTML = originalContent;
-        button.disabled = false;
-    });
+    }
+    return cookieValue;
 }
 
-function updateCartCount() {
-    // This function would update the cart count in the navigation
-    // Implementation depends on how cart count is displayed
+// Message system
+function showMessage(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.top = '100px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }
 </script>
 {% endblock %}

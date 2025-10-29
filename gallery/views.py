@@ -7,8 +7,20 @@ from .models import Artwork, Category
 
 def gallery_home(request):
     """Homepage with featured artworks and gallery overview"""
+    # Get hero image from site settings or fallback to first featured artwork
+    from pages.models import SiteSettings
+    try:
+        settings = SiteSettings.objects.first()
+        hero_artwork = settings.hero_image if settings and settings.hero_image else None
+    except:
+        hero_artwork = None
+    
     # Get featured artworks
     featured_artworks = Artwork.objects.filter(featured=True, is_active=True)[:6]
+    
+    # If no hero artwork selected in settings, use first featured artwork
+    if not hero_artwork and featured_artworks:
+        hero_artwork = featured_artworks.first()
     
     # Get recent artworks
     recent_artworks = Artwork.objects.filter(is_active=True).order_by('-created_at')[:8]
@@ -28,6 +40,7 @@ def gallery_home(request):
             })
     
     context = {
+        'hero_artwork': hero_artwork,
         'featured_artworks': featured_artworks,
         'recent_artworks': recent_artworks,
         'categories': category_data,

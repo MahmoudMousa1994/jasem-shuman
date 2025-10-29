@@ -152,6 +152,9 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ('Features', {
             'fields': ('enable_newsletter', 'enable_wishlist', 'enable_reviews')
         }),
+        ('Homepage Settings', {
+            'fields': ('hero_image',)
+        }),
     )
     
     def has_add_permission(self, request):

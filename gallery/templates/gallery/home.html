@@ -5,6 +5,7 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
@@ -25,14 +26,16 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                {% if featured_artworks.0 %}
+                {% if hero_artwork %}
                 <div class="hero-artwork">
-                    <img src="{{ featured_artworks.0.main_image.url }}" 
-                         alt="{{ featured_artworks.0.title }}"
-                         class="hero-image">
+                    <div class="hero-image-container">
+                        <img src="{{ hero_artwork.main_image.url }}" 
+                             alt="{{ hero_artwork.title }}"
+                             class="hero-img">
+                    </div>
                     <div class="hero-artwork-caption">
-                        <h4>{{ featured_artworks.0.title }}</h4>
-                        <p>{{ featured_artworks.0.artwork_creation_date.year }}</p>
+                        <h4>{{ hero_artwork.title }}</h4>
+                        <p>{{ hero_artwork.artwork_creation_date.year }}</p>
                     </div>
                 </div>
                 {% endif %}
@@ -61,15 +64,13 @@
                     <div class="category-image">
                         <img src="{{ category_info.sample_artwork.main_image.url }}" 
                              alt="{{ category_info.category.get_name_display }}"
-                             class="img-fluid">
-                        <div class="category-overlay">
-                            <div class="category-info">
-                                <h3>{{ category_info.category.get_name_display }}</h3>
-                                <p>{{ category_info.count }} artwork{{ category_info.count|pluralize }}</p>
-                                <a href="{% url 'gallery:category' category_info.category.name %}" 
-                                   class="btn btn-light btn-sm">Explore Collection</a>
-                            </div>
-                        </div>
+                             class="category-img">
+                    </div>
+                    <div class="category-info">
+                        <h3>{{ category_info.category.get_name_display }}</h3>
+                        <p>{{ category_info.count }} artwork{{ category_info.count|pluralize }}</p>
+                        <a href="{% url 'gallery:category' category_info.category.name %}" 
+                           class="btn btn-light btn-sm">Explore Collection</a>
                     </div>
                     {% endif %}
                 </div>
@@ -100,19 +101,7 @@
                     <div class="artwork-image">
                         <img src="{{ artwork.main_image.url }}" 
                              alt="{{ artwork.title }}"
-                             class="img-fluid">
-                        <div class="artwork-overlay">
-                            <div class="artwork-actions">
-                                <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
-                                   class="btn btn-primary btn-sm">View Details</a>
-                                {% if artwork.original_available or artwork.second_option_available %}
-                                <button class="btn btn-outline-light btn-sm ms-2 add-to-cart-btn"
-                                        data-artwork-id="{{ artwork.id }}">
-                                    Add to Cart
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
+                             class="featured-img">
                     </div>
                     <div class="artwork-info">
                         <h4 class="artwork-title">{{ artwork.title }}</h4>
@@ -129,6 +118,25 @@
                                 <span class="price-label">{{ artwork.second_option_name }}:</span>
                                 <span class="price">${{ artwork.second_option_price }}</span>
                             </div>
+                            {% endif %}
+                        </div>
+                        <div class="artwork-actions">
+                            <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
+                               class="btn btn-primary btn-sm">View Details</a>
+                            {% if artwork.original_available or artwork.second_option_available %}
+                            <button class="btn btn-outline-primary btn-sm ms-2 add-to-cart-btn"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#addToCartModal"
+                                    data-artwork-id="{{ artwork.id }}"
+                                    data-artwork-title="{{ artwork.title }}"
+                                    data-artwork-image="{{ artwork.main_image.url }}"
+                                    data-original-available="{{ artwork.original_available }}"
+                                    data-original-price="{{ artwork.original_price }}"
+                                    data-second-available="{{ artwork.second_option_available }}"
+                                    data-second-name="{{ artwork.second_option_name }}"
+                                    data-second-price="{{ artwork.second_option_price }}">
+                                Add to Cart
+                            </button>
                             {% endif %}
                         </div>
                     </div>
@@ -161,18 +169,16 @@
             {% for artwork in recent_artworks %}
             <div class="col-lg-3 col-md-6 mb-4">
                 <div class="artwork-card recent-artwork">
-                    <div class="artwork-image">
+                    <div class="recent-artwork-image">
                         <img src="{{ artwork.main_image.url }}" 
                              alt="{{ artwork.title }}"
-                             class="img-fluid">
-                        <div class="artwork-overlay">
-                            <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
-                               class="btn btn-primary btn-sm">View</a>
-                        </div>
+                             class="recent-image">
                     </div>
-                    <div class="artwork-info">
+                    <div class="artwork-info text-center mt-3">
                         <h5 class="artwork-title">{{ artwork.title }}</h5>
-                        <p class="artwork-category">{{ artwork.category.get_name_display }}</p>
+                        <p class="artwork-category text-muted">{{ artwork.category.get_name_display }}</p>
+                        <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
+                           class="btn btn-outline-primary btn-sm">View Details</a>
                     </div>
                 </div>
             </div>
@@ -181,16 +187,268 @@
         {% endif %}
     </div>
 </section>
+
+<!-- Add to Cart Modal -->
+<div class="modal fade" id="addToCartModal" tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToCartModalLabel">Add to Cart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <!-- Artwork Image -->
+                        <div class="col-md-5">
+                            <img id="modalArtworkImage" src="" alt="Artwork" class="img-fluid rounded shadow-sm">
+                        </div>
+                        
+                        <!-- Purchase Options -->
+                        <div class="col-md-7">
+                            <h4 id="modalArtworkTitle" class="mb-3"></h4>
+                            
+                            <!-- Purchase Type Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select Purchase Type:</label>
+                                <div id="purchaseOptions">
+                                    <!-- Options will be populated by JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <!-- Quantity Selection -->
+                            <div class="mb-4">
+                                <label for="quantity" class="form-label fw-bold">Quantity:</label>
+                                <div class="input-group" style="max-width: 150px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="decreaseQty">-</button>
+                                    <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="10">
+                                    <button class="btn btn-outline-secondary" type="button" id="increaseQty">+</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Price Summary -->
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Item Price:</span>
+                                        <span id="itemPrice">$0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Quantity:</span>
+                                        <span id="itemQuantity">1</span>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span>Total:</span>
+                                        <span id="totalPrice">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAddToCart">
+                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 $(document).ready(function() {
-    // Add to cart functionality
-    $('.add-to-cart-btn').on('click', function() {
-        const artworkId = $(this).data('artwork-id');
-        // We'll implement this in the store app
-        alert('Add to cart functionality will be implemented in the checkout phase');
+    let currentArtwork = null;
+    let selectedType = 'original';
+    
+    // Handle modal show event
+    $('#addToCartModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        currentArtwork = {
+            id: button.data('artwork-id'),
+            title: button.data('artwork-title'),
+            image: button.data('artwork-image'),
+            originalAvailable: button.data('original-available'),
+            originalPrice: parseFloat(button.data('original-price')) || 0,
+            secondAvailable: button.data('second-available'),
+            secondName: button.data('second-name'),
+            secondPrice: parseFloat(button.data('second-price')) || 0
+        };
+        
+        populateModal();
+    });
+    
+    function populateModal() {
+        // Set artwork details
+        $('#modalArtworkTitle').text(currentArtwork.title);
+        $('#modalArtworkImage').attr('src', currentArtwork.image);
+        
+        // Create purchase options
+        let optionsHtml = '';
+        
+        if (currentArtwork.originalAvailable) {
+            optionsHtml += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="purchaseType" id="originalOption" value="original" checked>
+                    <label class="form-check-label" for="originalOption">
+                        <strong>Original Artwork</strong> - $${currentArtwork.originalPrice.toFixed(2)}
+                        <small class="text-muted d-block">One-of-a-kind original piece</small>
+                    </label>
+                </div>
+            `;
+            selectedType = 'original';
+        }
+        
+        if (currentArtwork.secondAvailable) {
+            const isFirst = !currentArtwork.originalAvailable;
+            optionsHtml += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="purchaseType" id="secondOption" value="second" ${isFirst ? 'checked' : ''}>
+                    <label class="form-check-label" for="secondOption">
+                        <strong>${currentArtwork.secondName || 'Print'}</strong> - $${currentArtwork.secondPrice.toFixed(2)}
+                        <small class="text-muted d-block">High-quality reproduction</small>
+                    </label>
+                </div>
+            `;
+            if (isFirst) selectedType = 'second';
+        }
+        
+        $('#purchaseOptions').html(optionsHtml);
+        
+        // Update pricing
+        updatePricing();
+        
+        // Bind events
+        $('input[name="purchaseType"]').on('change', function() {
+            selectedType = $(this).val();
+            updatePricing();
+        });
+    }
+    
+    function updatePricing() {
+        const quantity = parseInt($('#quantity').val()) || 1;
+        let itemPrice = 0;
+        
+        if (selectedType === 'original') {
+            itemPrice = currentArtwork.originalPrice;
+        } else {
+            itemPrice = currentArtwork.secondPrice;
+        }
+        
+        const totalPrice = itemPrice * quantity;
+        
+        $('#itemPrice').text('$' + itemPrice.toFixed(2));
+        $('#itemQuantity').text(quantity);
+        $('#totalPrice').text('$' + totalPrice.toFixed(2));
+    }
+    
+    // Quantity controls
+    $('#increaseQty').on('click', function() {
+        const qty = parseInt($('#quantity').val()) || 1;
+        if (qty < 10) {
+            $('#quantity').val(qty + 1);
+            updatePricing();
+        }
+    });
+    
+    $('#decreaseQty').on('click', function() {
+        const qty = parseInt($('#quantity').val()) || 1;
+        if (qty > 1) {
+            $('#quantity').val(qty - 1);
+            updatePricing();
+        }
+    });
+    
+    $('#quantity').on('input', function() {
+        let qty = parseInt($(this).val()) || 1;
+        if (qty < 1) qty = 1;
+        if (qty > 10) qty = 10;
+        $(this).val(qty);
+        updatePricing();
+    });
+    
+    // Confirm add to cart
+    $('#confirmAddToCart').on('click', function() {
+        const button = $(this);
+        const originalText = button.html();
+        
+        // Show loading state
+        button.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Adding...');
+        button.prop('disabled', true);
+        
+        // Get CSRF token with multiple fallbacks
+        let csrfToken = null;
+        
+        // Try to get from form token
+        const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (tokenElement) {
+            csrfToken = tokenElement.value;
+        }
+        
+        // Fallback to meta tag
+        if (!csrfToken) {
+            const metaElement = document.querySelector('meta[name="csrf-token"]');
+            if (metaElement) {
+                csrfToken = metaElement.getAttribute('content');
+            }
+        }
+        
+        // Fallback to cookie method
+        if (!csrfToken) {
+            csrfToken = getCookie('csrftoken');
+        }
+        
+        console.log('CSRF Token:', csrfToken); // Debug log
+        
+        if (!csrfToken) {
+            showMessage('Security token missing. Please refresh the page.', 'error');
+            button.html(originalText);
+            button.prop('disabled', false);
+            return;
+        }
+        
+        // Make AJAX request
+        $.ajax({
+            url: '{% url "store:add_to_cart" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                artwork_id: currentArtwork.id,
+                item_type: selectedType,
+                quantity: parseInt($('#quantity').val()) || 1
+            }),
+            success: function(data) {
+                if (data.success) {
+                    // Update cart count
+                    if ($('#cart-count').length) {
+                        $('#cart-count').text(data.cart_total_items || 0);
+                    }
+                    
+                    // Show success message
+                    showMessage(data.message, 'success');
+                    
+                    // Close modal
+                    $('#addToCartModal').modal('hide');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            },
+            error: function() {
+                showMessage('An error occurred. Please try again.', 'error');
+            },
+            complete: function() {
+                // Reset button
+                button.html(originalText);
+                button.prop('disabled', false);
+            }
+        });
     });
     
     // Smooth scrolling for hero buttons
@@ -204,5 +462,39 @@ $(document).ready(function() {
         }
     });
 });
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showMessage(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const messageHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    $('body').append(messageHtml);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        $('.alert').fadeOut(() => $('.alert').remove());
+    }, 3000);
+}
 </script>
 {% endblock %}

@@ -216,6 +216,11 @@ class SiteSettings(models.Model):
     enable_wishlist = models.BooleanField(default=True)
     enable_reviews = models.BooleanField(default=True)
     
+    # Homepage settings
+    hero_image = models.ForeignKey('gallery.Artwork', on_delete=models.SET_NULL, 
+                                 null=True, blank=True,
+                                 help_text="Select artwork to display in homepage hero section")
+    
     class Meta:
         verbose_name = "Site Settings"
         verbose_name_plural = "Site Settings"
