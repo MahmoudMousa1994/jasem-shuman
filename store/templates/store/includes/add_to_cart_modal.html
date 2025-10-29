@@ -1,0 +1,89 @@
+<!-- Add to Cart Modal -->
+<div class="modal fade" id="addToCartModal" tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToCartModalLabel">Add to Cart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-to-cart-form">
+                    {% csrf_token %}
+                    <input type="hidden" id="artwork-id" name="artwork_id" value="">
+                    
+                    <div class="container-fluid">
+                        <div class="row">
+                            <!-- Artwork Image -->
+                            <div class="col-md-5">
+                                <img id="modal-artwork-image" src="" alt="Artwork" class="img-fluid rounded shadow-sm">
+                            </div>
+                            
+                            <!-- Purchase Options -->
+                            <div class="col-md-7">
+                                <h4 id="modal-artwork-title" class="mb-3"></h4>
+                                
+                                <!-- Purchase Type Selection -->
+                                <div class="mb-4">
+                                    <label class="form-label">Select Purchase Type:</label>
+                                    
+                                    <!-- Original Option -->
+                                    <div id="original-option" class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="item_type" id="option-original" value="original">
+                                        <label class="form-check-label" for="option-original">
+                                            <strong>Original Artwork</strong> - <span class="option-price">$0</span>
+                                            <br><small class="text-muted">One-of-a-kind original piece</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Second Option -->
+                                    <div id="second-option" class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="item_type" id="option-second" value="second">
+                                        <label class="form-check-label" for="option-second">
+                                            <strong class="option-name">Print Copy</strong> - <span class="option-price">$0</span>
+                                            <br><small class="text-muted">High-quality reproduction</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quantity Selection -->
+                                <div class="mb-4">
+                                    <label for="quantity" class="form-label">Quantity:</label>
+                                    <div class="input-group" style="max-width: 150px;">
+                                        <button class="btn btn-outline-secondary" type="button" id="decrease-qty">-</button>
+                                        <input type="number" class="form-control text-center" id="quantity" name="quantity" value="1" min="1" max="10">
+                                        <button class="btn btn-outline-secondary" type="button" id="increase-qty">+</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Price Summary -->
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Item Price:</span>
+                                            <span id="item-price">$0.00</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Quantity:</span>
+                                            <span id="item-quantity">1</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between fw-bold">
+                                            <span>Total:</span>
+                                            <span id="total-price">$0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="add-to-cart-form" class="btn btn-primary" id="confirm-add-to-cart">
+                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

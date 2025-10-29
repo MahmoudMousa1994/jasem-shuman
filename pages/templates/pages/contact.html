@@ -37,11 +37,11 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">Full Name *</label>
+                            <label for="name" class="form-label required">Full Name</label>
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">Email Address *</label>
+                            <label for="email" class="form-label required">Email Address</label>
                             <input type="email" class="form-control" id="email" name="email" required>
                         </div>
                     </div>
@@ -64,13 +64,13 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="subject" class="form-label">Subject *</label>
+                        <label for="subject" class="form-label required">Subject</label>
                         <input type="text" class="form-control" id="subject" name="subject" 
                                value="{% if artwork_id %}Inquiry about Artwork #{{ artwork_id }}{% endif %}" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="message" class="form-label">Message *</label>
+                        <label for="message" class="form-label required">Message</label>
                         <textarea class="form-control" id="message" name="message" rows="6" 
                                   placeholder="Please tell us more about your inquiry..." required></textarea>
                     </div>

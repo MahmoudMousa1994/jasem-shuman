@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<!-- Store Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="hero-title">Art Store</h1>
+                <h2 class="hero-subtitle">Original Palestinian Artworks & Sculptures</h2>
+                <p class="hero-description">
+                    Discover and purchase authentic Palestinian artworks, original sculptures, 
+                    and limited edition prints. Each piece carries the story of Palestinian culture, 
+                    heritage, and artistic excellence from internationally acclaimed artist Jasem Shuman.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#featured-artworks" class="btn btn-primary btn-lg me-3">Browse Collection</a>
+                    <a href="{% url 'store:cart' %}" class="btn btn-outline-primary btn-lg">View Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Artworks Section -->
+<section class="featured-artworks py-5" id="featured-artworks">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-title">Featured Artworks</h2>
+                <p class="section-subtitle">
+                    Discover our most celebrated pieces, each reflecting the rich cultural heritage 
+                    and artistic vision of Palestinian art
+                </p>
+            </div>
+        </div>
+        
+        {% if featured_artworks %}
+        <div class="row">
+            {% for artwork in featured_artworks %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="artwork-card">
+                    <div class="artwork-image">
+                        <img src="{{ artwork.main_image.url }}" alt="{{ artwork.title }}" class="card-img-top">
+                        <div class="artwork-overlay">
+                            <a href="{{ artwork.get_absolute_url }}" class="btn btn-primary btn-sm">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                    <div class="artwork-info">
+                        <h5 class="artwork-title">{{ artwork.title }}</h5>
+                        <p class="artwork-category">{{ artwork.category.get_name_display }}</p>
+                        <div class="artwork-prices">
+                            {% if artwork.original_available %}
+                            <div class="price-option">
+                                <span class="price-label">Original:</span>
+                                <span class="price">${{ artwork.original_price|floatformat:0 }}</span>
+                            </div>
+                            {% endif %}
+                            {% if artwork.second_option_available and artwork.second_option_price %}
+                            <div class="price-option">
+                                <span class="price-label">{{ artwork.second_option_name }}:</span>
+                                <span class="price">${{ artwork.second_option_price|floatformat:0 }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="artwork-actions">
+                            {% if artwork.original_available or artwork.second_option_available %}
+                            <button class="btn btn-primary btn-sm add-to-cart-btn ms-2"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#addToCartModal"
+                                    data-artwork-id="{{ artwork.id }}"
+                                    data-artwork-title="{{ artwork.title }}"
+                                    data-artwork-image="{{ artwork.main_image.url }}"
+                                    data-original-available="{{ artwork.original_available }}"
+                                    data-original-price="{{ artwork.original_price }}"
+                                    data-second-available="{{ artwork.second_option_available }}"
+                                    data-second-name="{{ artwork.second_option_name }}"
+                                    data-second-price="{{ artwork.second_option_price }}">
+                                Add to Cart
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 no-results-state">
+            <div class="mb-4">
+                <i class="fas fa-palette fa-3x mb-3"></i>
+                <h4>No artworks available for purchase yet</h4>
+                <p class="text-muted mb-4">Please check back soon for new additions to our collection.</p>
+                <a href="{% url 'gallery:home' %}" class="btn btn-primary">
+                    <i class="fas fa-images me-1"></i>Browse Gallery
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if featured_artworks %}
+        <div class="text-center mt-5">
+            <a href="{% url 'gallery:home' %}" class="btn btn-outline-primary btn-lg">
+                View Complete Gallery
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Store Information Section -->
+<section class="store-info py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-title">Why Choose Jasem Shuman Art?</h2>
+                <p class="section-subtitle mb-5">
+                    Every piece is a testament to Palestinian artistic heritage and contemporary innovation
+                </p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="info-item text-center">
+                    <div class="info-icon">
+                        <i class="bi bi-palette"></i>
+                    </div>
+                    <h4>Authentic Palestinian Art</h4>
+                    <p>Original works that capture the essence of Palestinian culture, history, and contemporary vision through masterful artistic expression.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="info-item text-center">
+                    <div class="info-icon">
+                        <i class="bi bi-award"></i>
+                    </div>
+                    <h4>Internationally Acclaimed</h4>
+                    <p>Works by Jasem Shuman, featured in exhibitions worldwide and collected by prestigious institutions and private collectors globally.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="info-item text-center">
+                    <div class="info-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4>Certificate of Authenticity</h4>
+                    <p>Every artwork comes with a signed certificate of authenticity, ensuring the provenance and value of your investment in Palestinian art.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Purchase Options Section -->
+<section class="purchase-options py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-title">Purchase Options</h2>
+                <p class="section-subtitle mb-5">
+                    Choose from original artworks or high-quality limited edition alternatives
+                </p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="option-card">
+                    <div class="option-header">
+                        <h3>Original Artworks</h3>
+                        <p class="option-subtitle">One-of-a-kind pieces</p>
+                    </div>
+                    <div class="option-content">
+                        <ul class="option-features">
+                            <li>Original paintings and sculptures</li>
+                            <li>Signed by the artist</li>
+                            <li>Certificate of authenticity included</li>
+                            <li>Unique, never to be reproduced</li>
+                            <li>Investment quality artwork</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="option-card">
+                    <div class="option-header">
+                        <h3>Limited Editions</h3>
+                        <p class="option-subtitle">High-quality alternatives</p>
+                    </div>
+                    <div class="option-content">
+                        <ul class="option-features">
+                            <li>Print copies of paintings (limited to 50)</li>
+                            <li>Signed photo sets of sculptures (limited to 50)</li>
+                            <li>Professional archival quality</li>
+                            <li>Numbered and signed</li>
+                            <li>More accessible pricing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Shipping and Contact Section -->
+<section class="shipping-contact py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <h3>Shipping Information</h3>
+                <p>We ship worldwide with careful packaging to ensure your artwork arrives safely.</p>
+                <ul>
+                    <li>Free shipping on orders over $500</li>
+                    <li>Professional packaging and insurance</li>
+                    <li>Tracking information provided</li>
+                    <li>International shipping available</li>
+                </ul>
+            </div>
+            <div class="col-md-6 mb-4">
+                <h3>Questions?</h3>
+                <p>Contact us for inquiries about specific artworks, commissions, or exhibition opportunities.</p>
+                <a href="{% url 'pages:contact' %}" class="btn btn-primary">
+                    Contact the Artist
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add to Cart Modal -->
+{% include 'store/includes/add_to_cart_modal.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-submit form when filters change
+document.addEventListener('DOMContentLoaded', function() {
+    // Add to cart functionality (from existing script)
+    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const artworkId = this.dataset.artworkId;
+            const artworkTitle = this.dataset.artworkTitle;
+            const artworkImage = this.dataset.artworkImage;
+            const originalAvailable = this.dataset.originalAvailable === 'True';
+            const originalPrice = this.dataset.originalPrice;
+            const secondAvailable = this.dataset.secondAvailable === 'True';
+            const secondName = this.dataset.secondName;
+            const secondPrice = this.dataset.secondPrice;
+            
+            // Populate modal
+            document.getElementById('modal-artwork-title').textContent = artworkTitle;
+            document.getElementById('modal-artwork-image').src = artworkImage;
+            document.getElementById('modal-artwork-image').alt = artworkTitle;
+            
+            // Set hidden artwork ID
+            document.getElementById('artwork-id').value = artworkId;
+            
+            // Show/hide options based on availability
+            const originalOption = document.getElementById('original-option');
+            const secondOption = document.getElementById('second-option');
+            
+            if (originalAvailable) {
+                originalOption.style.display = 'block';
+                originalOption.querySelector('.option-price').textContent = `$${parseFloat(originalPrice).toFixed(0)}`;
+            } else {
+                originalOption.style.display = 'none';
+            }
+            
+            if (secondAvailable) {
+                secondOption.style.display = 'block';
+                secondOption.querySelector('.option-name').textContent = secondName;
+                secondOption.querySelector('.option-price').textContent = `$${parseFloat(secondPrice).toFixed(0)}`;
+            } else {
+                secondOption.style.display = 'none';
+            }
+            
+            // Select first available option
+            if (originalAvailable) {
+                document.getElementById('option-original').checked = true;
+            } else if (secondAvailable) {
+                document.getElementById('option-second').checked = true;
+            }
+        });
+    });
+    
+    // Handle add to cart form submission
+    document.getElementById('add-to-cart-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const data = {
+            artwork_id: formData.get('artwork_id'),
+            item_type: formData.get('item_type'),
+            quantity: formData.get('quantity')
+        };
+        
+        fetch('{% url "store:add_to_cart" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update cart counter
+                const cartCounter = document.querySelector('.cart-counter');
+                if (cartCounter) {
+                    cartCounter.textContent = data.cart_total_items;
+                    cartCounter.style.display = data.cart_total_items > 0 ? 'block' : 'none';
+                }
+                
+                // Show success message
+                alert(data.message);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
+                modal.hide();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding to cart');
+        });
+    });
+});
+</script>
+{% endblock %}

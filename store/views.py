@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db import models
 from .models import Cart, CartItem, Order
 from gallery.models import Artwork, Category
 import json
@@ -57,16 +58,57 @@ def get_cart_count(request):
 
 
 def store_home(request):
-    """Store homepage with featured artworks and categories"""
-    featured_artworks = Artwork.objects.filter(featured=True, original_available=True)[:8]
+    """Store homepage with categories"""
+    # Get all categories
     categories = Category.objects.all()
+    
+    # Get artwork counts and sample artworks for each category
+    category_data = []
+    for category in categories:
+        # Get available artworks for this category
+        available_artworks = Artwork.objects.filter(
+            category=category
+        ).filter(
+            models.Q(original_available=True) | 
+            models.Q(total_second_option_copies__gt=models.F('sold_second_option_copies'))
+        )
+        
+        artwork_count = available_artworks.count()
+        sample_artwork = available_artworks.first()  # Get first artwork as sample
+        
+        category_data.append({
+            'category': category,
+            'artwork_count': artwork_count,
+            'sample_artwork': sample_artwork
+        })
     
     context = {
         'page_title': 'Store - Jasem Shuman Art',
-        'featured_artworks': featured_artworks,
-        'categories': categories,
+        'categories': category_data,
     }
     return render(request, 'store/home.html', context)
+
+
+def category_view(request, category_name):
+    """Display artworks for a specific category"""
+    # Get the category
+    category = get_object_or_404(Category, name=category_name)
+    
+    # Get artworks for this category that are available
+    artworks = Artwork.objects.filter(
+        category=category
+    ).filter(
+        models.Q(original_available=True) | 
+        models.Q(total_second_option_copies__gt=models.F('sold_second_option_copies'))
+    ).order_by('title')
+    
+    context = {
+        'page_title': f'{category.get_name_display()} - Jasem Shuman Art',
+        'category': category,
+        'artworks': artworks,
+        'artwork_count': artworks.count(),
+    }
+    return render(request, 'store/category.html', context)
 
 
 def cart_view(request):
