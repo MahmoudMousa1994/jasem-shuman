@@ -187,7 +187,7 @@ class SiteSettings(models.Model):
                                   default="Contemporary Palestinian Artist")
     
     # Contact information
-    contact_email = models.EmailField(default="info@jasemshuman.com")
+    contact_email = models.EmailField(default="jasem_403@hotmail.com")
     contact_phone = models.CharField(max_length=20, blank=True)
     
     # Address

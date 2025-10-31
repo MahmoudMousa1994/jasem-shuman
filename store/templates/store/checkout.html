@@ -23,44 +23,105 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="first_name" class="form-label required">First Name</label>
-                                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ form_data.first_name|default:'' }}" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="last_name" class="form-label required">Last Name</label>
-                                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ form_data.last_name|default:'' }}" required>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label required">Email Address</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ form_data.email|default:user.email }}" required>
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label required">Phone Number</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ form_data.phone|default:'' }}" required>
                             </div>
                             <div class="mb-3">
                                 <label for="address" class="form-label required">Street Address</label>
-                                <input type="text" class="form-control" id="address" name="address" required>
+                                <input type="text" class="form-control" id="address" name="address" value="{{ form_data.address|default:'' }}" required>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label for="city" class="form-label required">City</label>
-                                    <input type="text" class="form-control" id="city" name="city" required>
+                                    <input type="text" class="form-control" id="city" name="city" value="{{ form_data.city|default:'' }}" required>
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="state" class="form-label required">State</label>
-                                    <select class="form-select" id="state" name="state" required>
-                                        <option value="">Select State</option>
-                                        <option value="AL">Alabama</option>
-                                        <option value="AK">Alaska</option>
-                                        <option value="AZ">Arizona</option>
-                                        <!-- Add more states as needed -->
-                                    </select>
+                                <div class="col-md-4 mb-3">
+                                    <label for="state" class="form-label">State/Province/Region</label>
+                                    <input type="text" class="form-control" id="state" name="state" value="{{ form_data.state|default:'' }}" placeholder="Optional">
                                 </div>
-                                <div class="col-md-3 mb-3">
-                                    <label for="zip_code" class="form-label required">ZIP Code</label>
-                                    <input type="text" class="form-control" id="zip_code" name="zip_code" required>
+                                <div class="col-md-4 mb-3">
+                                    <label for="zip_code" class="form-label required">Postal Code</label>
+                                    <input type="text" class="form-control" id="zip_code" name="zip_code" value="{{ form_data.zip_code|default:'' }}" required>
                                 </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="country" class="form-label required">Country</label>
+                                <select class="form-select" id="country" name="country" required>
+                                    <option value="">Select Country</option>
+                                    <option value="US" {% if form_data.country == 'US' %}selected{% endif %}>United States</option>
+                                    <option value="CA" {% if form_data.country == 'CA' %}selected{% endif %}>Canada</option>
+                                    <option value="GB" {% if form_data.country == 'GB' %}selected{% endif %}>United Kingdom</option>
+                                    <option value="AU" {% if form_data.country == 'AU' %}selected{% endif %}>Australia</option>
+                                    <option value="DE" {% if form_data.country == 'DE' %}selected{% endif %}>Germany</option>
+                                    <option value="FR" {% if form_data.country == 'FR' %}selected{% endif %}>France</option>
+                                    <option value="IT" {% if form_data.country == 'IT' %}selected{% endif %}>Italy</option>
+                                    <option value="ES" {% if form_data.country == 'ES' %}selected{% endif %}>Spain</option>
+                                    <option value="NL" {% if form_data.country == 'NL' %}selected{% endif %}>Netherlands</option>
+                                    <option value="SE" {% if form_data.country == 'SE' %}selected{% endif %}>Sweden</option>
+                                    <option value="NO" {% if form_data.country == 'NO' %}selected{% endif %}>Norway</option>
+                                    <option value="DK" {% if form_data.country == 'DK' %}selected{% endif %}>Denmark</option>
+                                    <option value="CH" {% if form_data.country == 'CH' %}selected{% endif %}>Switzerland</option>
+                                    <option value="AT" {% if form_data.country == 'AT' %}selected{% endif %}>Austria</option>
+                                    <option value="BE" {% if form_data.country == 'BE' %}selected{% endif %}>Belgium</option>
+                                    <option value="JP" {% if form_data.country == 'JP' %}selected{% endif %}>Japan</option>
+                                    <option value="KR" {% if form_data.country == 'KR' %}selected{% endif %}>South Korea</option>
+                                    <option value="SG" {% if form_data.country == 'SG' %}selected{% endif %}>Singapore</option>
+                                    <option value="AE" {% if form_data.country == 'AE' %}selected{% endif %}>United Arab Emirates</option>
+                                    <option value="SA" {% if form_data.country == 'SA' %}selected{% endif %}>Saudi Arabia</option>
+                                    <option value="QA" {% if form_data.country == 'QA' %}selected{% endif %}>Qatar</option>
+                                    <option value="KW" {% if form_data.country == 'KW' %}selected{% endif %}>Kuwait</option>
+                                    <option value="BH" {% if form_data.country == 'BH' %}selected{% endif %}>Bahrain</option>
+                                    <option value="OM" {% if form_data.country == 'OM' %}selected{% endif %}>Oman</option>
+                                    <option value="JO" {% if form_data.country == 'JO' %}selected{% endif %}>Jordan</option>
+                                    <option value="LB" {% if form_data.country == 'LB' %}selected{% endif %}>Lebanon</option>
+                                    <option value="PS" {% if form_data.country == 'PS' %}selected{% endif %}>Palestine</option>
+                                    <option value="EG" {% if form_data.country == 'EG' %}selected{% endif %}>Egypt</option>
+                                    <option value="MA" {% if form_data.country == 'MA' %}selected{% endif %}>Morocco</option>
+                                    <option value="TN" {% if form_data.country == 'TN' %}selected{% endif %}>Tunisia</option>
+                                    <option value="DZ" {% if form_data.country == 'DZ' %}selected{% endif %}>Algeria</option>
+                                    <option value="TR" {% if form_data.country == 'TR' %}selected{% endif %}>Turkey</option>
+                                    <option value="IL" {% if form_data.country == 'IL' %}selected{% endif %}>Israel</option>
+                                    <option value="BR" {% if form_data.country == 'BR' %}selected{% endif %}>Brazil</option>
+                                    <option value="MX" {% if form_data.country == 'MX' %}selected{% endif %}>Mexico</option>
+                                    <option value="AR" {% if form_data.country == 'AR' %}selected{% endif %}>Argentina</option>
+                                    <option value="CL" {% if form_data.country == 'CL' %}selected{% endif %}>Chile</option>
+                                    <option value="CO" {% if form_data.country == 'CO' %}selected{% endif %}>Colombia</option>
+                                    <option value="IN" {% if form_data.country == 'IN' %}selected{% endif %}>India</option>
+                                    <option value="CN" {% if form_data.country == 'CN' %}selected{% endif %}>China</option>
+                                    <option value="HK" {% if form_data.country == 'HK' %}selected{% endif %}>Hong Kong</option>
+                                    <option value="TW" {% if form_data.country == 'TW' %}selected{% endif %}>Taiwan</option>
+                                    <option value="MY" {% if form_data.country == 'MY' %}selected{% endif %}>Malaysia</option>
+                                    <option value="TH" {% if form_data.country == 'TH' %}selected{% endif %}>Thailand</option>
+                                    <option value="ID" {% if form_data.country == 'ID' %}selected{% endif %}>Indonesia</option>
+                                    <option value="PH" {% if form_data.country == 'PH' %}selected{% endif %}>Philippines</option>
+                                    <option value="VN" {% if form_data.country == 'VN' %}selected{% endif %}>Vietnam</option>
+                                    <option value="NZ" {% if form_data.country == 'NZ' %}selected{% endif %}>New Zealand</option>
+                                    <option value="ZA" {% if form_data.country == 'ZA' %}selected{% endif %}>South Africa</option>
+                                    <option value="NG" {% if form_data.country == 'NG' %}selected{% endif %}>Nigeria</option>
+                                    <option value="KE" {% if form_data.country == 'KE' %}selected{% endif %}>Kenya</option>
+                                    <option value="GH" {% if form_data.country == 'GH' %}selected{% endif %}>Ghana</option>
+                                    <option value="RU" {% if form_data.country == 'RU' %}selected{% endif %}>Russia</option>
+                                    <option value="PL" {% if form_data.country == 'PL' %}selected{% endif %}>Poland</option>
+                                    <option value="CZ" {% if form_data.country == 'CZ' %}selected{% endif %}>Czech Republic</option>
+                                    <option value="HU" {% if form_data.country == 'HU' %}selected{% endif %}>Hungary</option>
+                                    <option value="PT" {% if form_data.country == 'PT' %}selected{% endif %}>Portugal</option>
+                                    <option value="GR" {% if form_data.country == 'GR' %}selected{% endif %}>Greece</option>
+                                    <option value="FI" {% if form_data.country == 'FI' %}selected{% endif %}>Finland</option>
+                                    <option value="IE" {% if form_data.country == 'IE' %}selected{% endif %}>Ireland</option>
+                                    <option value="LU" {% if form_data.country == 'LU' %}selected{% endif %}>Luxembourg</option>
+                                </select>
                             </div>
                         </div>
                         
@@ -72,13 +133,13 @@
                             <div class="mb-3">
                                 <label class="form-label required">Payment Method</label>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="credit_card" value="credit_card" checked>
+                                    <input class="form-check-input" type="radio" name="payment_method" id="credit_card" value="credit_card" {% if form_data.payment_method == 'credit_card' or not form_data.payment_method %}checked{% endif %}>
                                     <label class="form-check-label" for="credit_card">
                                         <i class="fas fa-credit-card me-2"></i>Credit Card
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal" {% if form_data.payment_method == 'paypal' %}checked{% endif %}>
                                     <label class="form-check-label" for="paypal">
                                         <i class="fab fa-paypal me-2"></i>PayPal
                                     </label>
@@ -88,21 +149,21 @@
                             <div id="credit-card-form">
                                 <div class="mb-3">
                                     <label for="card_number" class="form-label required">Card Number</label>
-                                    <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456">
+                                    <input type="text" class="form-control" id="card_number" name="card_number" value="{{ form_data.card_number|default:'' }}" placeholder="1234 5678 9012 3456">
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="expiry_date" class="form-label required">Expiry Date</label>
-                                        <input type="text" class="form-control" id="expiry_date" name="expiry_date" placeholder="MM/YY">
+                                        <input type="text" class="form-control" id="expiry_date" name="expiry_date" value="{{ form_data.expiry_date|default:'' }}" placeholder="MM/YY">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="cvv" class="form-label required">CVV</label>
-                                        <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123">
+                                        <input type="text" class="form-control" id="cvv" name="cvv" value="{{ form_data.cvv|default:'' }}" placeholder="123">
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="card_name" class="form-label required">Name on Card</label>
-                                    <input type="text" class="form-control" id="card_name" name="card_name">
+                                    <input type="text" class="form-control" id="card_name" name="card_name" value="{{ form_data.card_name|default:'' }}">
                                 </div>
                             </div>
                         </div>
@@ -114,7 +175,7 @@
                             </h5>
                             <div class="mb-3">
                                 <label for="special_instructions" class="form-label">Additional Notes (Optional)</label>
-                                <textarea class="form-control" id="special_instructions" name="special_instructions" rows="3" placeholder="Any special delivery instructions or notes..."></textarea>
+                                <textarea class="form-control" id="special_instructions" name="special_instructions" rows="3" placeholder="Any special delivery instructions or notes...">{{ form_data.special_instructions|default:'' }}</textarea>
                             </div>
                         </div>
                         
@@ -138,20 +199,39 @@
                     <h4 class="mb-0">Order Summary</h4>
                 </div>
                 <div class="card-body">
-                    <!-- Order items will be populated here -->
+                    <!-- Order items -->
                     <div id="order-items">
-                        <p class="text-muted">Loading cart items...</p>
+                        {% for item in cart_items %}
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            {% if item.artwork.main_image %}
+                            <img src="{{ item.artwork.main_image.url }}" alt="{{ item.artwork.title }}" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-image text-muted"></i>
+                            </div>
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ item.artwork.title }}</h6>
+                                <small class="text-muted">{{ item.get_item_type_display }} × {{ item.quantity }}</small>
+                            </div>
+                            <div class="text-end">
+                                <strong>${{ item.total_price }}</strong>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">No items in cart</p>
+                        {% endfor %}
                     </div>
                     
                     <hr>
                     
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal:</span>
-                        <span id="subtotal">$0.00</span>
+                        <span id="subtotal">${{ cart.total_price|default:"0.00" }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Shipping:</span>
-                        <span id="shipping">$0.00</span>
+                        <span id="shipping">${{ shipping_cost|default:"0.00" }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Tax:</span>
@@ -160,7 +240,7 @@
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>Total:</strong>
-                        <strong id="total">$0.00</strong>
+                        <strong id="total">${{ total_amount|default:"0.00" }}</strong>
                     </div>
                 </div>
             </div>
@@ -215,70 +295,66 @@ document.addEventListener('DOMContentLoaded', function() {
     const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
     const creditCardForm = document.getElementById('credit-card-form');
     
+    function togglePaymentForm() {
+        const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+        if (selectedMethod && selectedMethod.value === 'credit_card') {
+            creditCardForm.style.display = 'block';
+        } else {
+            creditCardForm.style.display = 'none';
+        }
+    }
+    
+    // Initialize payment form visibility
+    togglePaymentForm();
+    
     paymentMethods.forEach(method => {
-        method.addEventListener('change', function() {
-            if (this.value === 'credit_card') {
-                creditCardForm.style.display = 'block';
-            } else {
-                creditCardForm.style.display = 'none';
-            }
-        });
+        method.addEventListener('change', togglePaymentForm);
     });
     
-    // Form validation
+    // Form validation and submission
     const checkoutForm = document.getElementById('checkout-form');
     checkoutForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+        // Remove preventDefault to allow normal form submission
+        // e.preventDefault();
         
-        // Basic validation
-        const requiredFields = checkoutForm.querySelectorAll('[required]');
-        let isValid = true;
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Order...';
+        submitBtn.disabled = true;
         
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                field.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                field.classList.remove('is-invalid');
-            }
-        });
-        
-        if (isValid) {
-            // Process the order
-            processOrder();
-        } else {
-            alert('Please fill in all required fields.');
-        }
+        // Let the form submit normally to the backend
     });
     
-    // Load order summary
-    loadOrderSummary();
+    // Credit card number formatting
+    const cardNumberInput = document.getElementById('card_number');
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = value;
+        });
+    }
+    
+    // Expiry date formatting
+    const expiryInput = document.getElementById('expiry_date');
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+    }
+    
+    // CVV formatting
+    const cvvInput = document.getElementById('cvv');
+    if (cvvInput) {
+        cvvInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+        });
+    }
 });
-
-function processOrder() {
-    // Show loading state
-    const submitBtn = document.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-    submitBtn.disabled = true;
-    
-    // Simulate order processing
-    setTimeout(() => {
-        // Redirect to success page (placeholder)
-        window.location.href = '/store/order-success/';
-    }, 2000);
-}
-
-function loadOrderSummary() {
-    // Placeholder for loading order summary
-    const orderItems = document.getElementById('order-items');
-    orderItems.innerHTML = '<p class="text-muted text-center">No items in cart</p>';
-    
-    // Update totals
-    document.getElementById('subtotal').textContent = '$0.00';
-    document.getElementById('shipping').textContent = '$0.00';
-    document.getElementById('tax').textContent = '$0.00';
-    document.getElementById('total').textContent = '$0.00';
-}
 </script>
 {% endblock %}

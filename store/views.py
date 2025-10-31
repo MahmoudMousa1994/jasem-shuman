@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import models
-from .models import Cart, CartItem, Order
+from decimal import Decimal
+from .models import Cart, CartItem, Order, OrderItem, ShippingAddress, PaymentInfo
 from gallery.models import Artwork, Category
 import json
 
@@ -300,19 +301,168 @@ def remove_cart_item(request):
 @login_required
 def checkout(request):
     """Checkout process"""
-    # Placeholder for checkout functionality
+    # Get user's cart
+    try:
+        cart = Cart.objects.get(user=request.user)
+        cart_items = cart.items.all()
+        
+        if not cart_items.exists():
+            messages.warning(request, 'Your cart is empty. Please add items before checkout.')
+            return redirect('store:cart')
+            
+    except Cart.DoesNotExist:
+        messages.warning(request, 'Your cart is empty. Please add items before checkout.')
+        return redirect('store:cart')
+    
+    if request.method == 'POST':
+        # Process checkout form
+        try:
+            # Extract form data
+            shipping_data = {
+                'first_name': request.POST.get('first_name', '').strip(),
+                'last_name': request.POST.get('last_name', '').strip(),
+                'email': request.POST.get('email', '').strip(),
+                'phone': request.POST.get('phone', '').strip(),
+                'address': request.POST.get('address', '').strip(),
+                'city': request.POST.get('city', '').strip(),
+                'state': request.POST.get('state', '').strip(),
+                'zip_code': request.POST.get('zip_code', '').strip(),
+                'country': request.POST.get('country', '').strip(),
+            }
+            
+            payment_data = {
+                'payment_method': request.POST.get('payment_method', ''),
+                'card_name': request.POST.get('card_name', '').strip(),
+                'card_number': request.POST.get('card_number', '').strip(),
+            }
+            
+            special_instructions = request.POST.get('special_instructions', '').strip()
+            
+            # Basic validation
+            required_shipping_fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'city', 'zip_code', 'country']
+            missing_fields = [field for field in required_shipping_fields if not shipping_data.get(field)]
+            
+            if missing_fields:
+                messages.error(request, f'Please fill in all required fields: {", ".join(missing_fields)}')
+                return render(request, 'store/checkout.html', {
+                    'page_title': 'Checkout - Jasem Shuman Art',
+                    'cart_items': cart_items,
+                    'cart': cart,
+                    'form_data': request.POST,
+                    'shipping_cost': Decimal('25.00'),
+                    'total_amount': cart.total_price + Decimal('25.00'),
+                })
+            
+            # Validate payment method
+            if payment_data['payment_method'] not in ['credit_card', 'paypal']:
+                messages.error(request, 'Please select a valid payment method.')
+                return render(request, 'store/checkout.html', {
+                    'page_title': 'Checkout - Jasem Shuman Art',
+                    'cart_items': cart_items,
+                    'cart': cart,
+                    'form_data': request.POST,
+                })
+            
+            # Calculate totals
+            subtotal = cart.total_price
+            shipping_cost = Decimal('25.00')  # Fixed shipping for now
+            total_amount = subtotal + shipping_cost
+            
+            # Create order
+            order = Order.objects.create(
+                customer=request.user,
+                subtotal=subtotal,
+                shipping_cost=shipping_cost,
+                total_amount=total_amount,
+                customer_notes=special_instructions,
+                order_status='pending'
+            )
+            
+            # Create order items from cart
+            for cart_item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    artwork=cart_item.artwork,
+                    item_type=cart_item.item_type,
+                    quantity=cart_item.quantity,
+                    unit_price=cart_item.unit_price,
+                    total_price=cart_item.total_price
+                )
+            
+            # Create shipping address
+            ShippingAddress.objects.create(
+                order=order,
+                full_name=f"{shipping_data['first_name']} {shipping_data['last_name']}",
+                phone=shipping_data['phone'],
+                email=shipping_data['email'],
+                address_line_1=shipping_data['address'],
+                city=shipping_data['city'],
+                state=shipping_data['state'],  # Can be empty for countries that don't use states
+                postal_code=shipping_data['zip_code'],
+                country=shipping_data['country'],
+                delivery_instructions=special_instructions
+            )
+            
+            # Create payment info
+            PaymentInfo.objects.create(
+                order=order,
+                payment_method=payment_data['payment_method'],
+                cardholder_name=payment_data.get('card_name', ''),
+                card_last_four=payment_data.get('card_number', '')[-4:] if payment_data.get('card_number') else '',
+                transaction_reference=f"ORDER-{order.id}-{order.created_at.strftime('%Y%m%d')}"
+            )
+            
+            # Clear the cart
+            cart_items.delete()
+            
+            # Success message and redirect
+            messages.success(request, f'Order #{order.id} placed successfully! You will receive a confirmation email shortly.')
+            return redirect('store:order_success', order_id=order.id)
+            
+        except Exception as e:
+            messages.error(request, 'An error occurred while processing your order. Please try again.')
+            return render(request, 'store/checkout.html', {
+                'page_title': 'Checkout - Jasem Shuman Art',
+                'cart_items': cart_items,
+                'cart': cart,
+                'form_data': request.POST,
+            })
+    
+    # GET request - display checkout form
+    shipping_cost = Decimal('25.00')
     context = {
         'page_title': 'Checkout - Jasem Shuman Art',
+        'cart_items': cart_items,
+        'cart': cart,
+        'shipping_cost': shipping_cost,
+        'total_amount': cart.total_price + shipping_cost,
     }
     return render(request, 'store/checkout.html', context)
 
 
 @login_required
+def order_success(request, order_id):
+    """Order success page"""
+    order = get_object_or_404(Order, id=order_id, customer=request.user)
+    
+    context = {
+        'page_title': f'Order Confirmation - Jasem Shuman Art',
+        'order': order,
+    }
+    return render(request, 'store/order_success.html', context)
+
+
+@login_required
 def order_history(request):
     """User order history"""
-    # Placeholder for order history
+    # Get user's orders
+    orders = Order.objects.filter(customer=request.user).select_related(
+        'payment_info', 'shipping_address'
+    ).prefetch_related('items__artwork').order_by('-created_at')
+    
     context = {
         'page_title': 'Order History - Jasem Shuman Art',
+        'orders': orders,
     }
     return render(request, 'store/order_history.html', context)
 
@@ -320,8 +470,18 @@ def order_history(request):
 @login_required
 def order_detail(request, order_id):
     """Individual order detail"""
-    # Placeholder for order detail
+    # Get order for current user only
+    order = get_object_or_404(Order, id=order_id, customer=request.user)
+    
+    # Ensure payment_info and shipping_address exist (add error handling)
+    if not hasattr(order, 'payment_info'):
+        messages.warning(request, 'Payment information is not available for this order.')
+    
+    if not hasattr(order, 'shipping_address'):
+        messages.warning(request, 'Shipping address is not available for this order.')
+    
     context = {
         'page_title': f'Order #{order_id} - Jasem Shuman Art',
+        'order': order,
     }
     return render(request, 'store/order_detail.html', context)

@@ -94,9 +94,9 @@ class ShippingAddress(TimestampedModel):
     address_line_1 = models.CharField(max_length=200, help_text="Street address")
     address_line_2 = models.CharField(max_length=200, blank=True, help_text="Apartment, suite, etc.")
     city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True, help_text="State/Province/Region (optional)")
     postal_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=100, default="United States")
+    country = models.CharField(max_length=100)
     
     # Delivery preferences
     delivery_instructions = models.TextField(blank=True, help_text="Special delivery instructions")

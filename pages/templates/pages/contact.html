@@ -6,59 +6,115 @@
 
 {% block content %}
 <div class="container py-5">
+    <!-- Hero Section -->
     <div class="row">
-        <div class="col-lg-8 mx-auto text-center mb-5">
-            <h1 class="page-title">Get in Touch</h1>
-            <p class="lead">
+        <div class="col-lg-10 mx-auto text-center mb-5">
+            <h1 class="page-title mb-3">Get in Touch</h1>
+            <p class="lead mb-4">
                 Have questions about a piece? Interested in commissioning work? 
-                We'd love to hear from you.
+                We'd love to hear from you and discuss how art can transform your space.
             </p>
+            <div class="contact-hero-stats">
+                <div class="row g-4">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">24hrs</div>
+                            <div class="stat-label">Response Time</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">Commissions</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">15+</div>
+                            <div class="stat-label">Years Experience</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-item">
+                            <div class="stat-number">Global</div>
+                            <div class="stat-label">Shipping</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
     {% if success %}
     <div class="row">
         <div class="col-lg-8 mx-auto">
-            <div class="alert alert-success text-center">
-                <h4><i class="fas fa-check-circle"></i> Message Sent Successfully!</h4>
+            <div class="alert alert-success text-center success-message">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h4>Message Sent Successfully!</h4>
                 <p>Thank you for reaching out. We'll get back to you within 24 hours.</p>
-                <a href="{% url 'gallery:home' %}" class="btn btn-primary">Return to Gallery</a>
+                <div class="mt-4">
+                    <a href="{% url 'gallery:home' %}" class="btn btn-primary me-3">View Gallery</a>
+                    <a href="{% url 'pages:contact' %}" class="btn btn-outline-primary">Send Another Message</a>
+                </div>
             </div>
         </div>
     </div>
     {% else %}
-    <div class="row">
+    <div class="row g-5">
         <!-- Contact Form -->
         <div class="col-lg-8">
             <div class="contact-form-card">
-                <h3 class="mb-4">Send us a Message</h3>
-                <form method="post" class="contact-form">
+                <div class="form-header">
+                    <h3 class="mb-2">Send us a Message</h3>
+                    <p class="text-muted mb-4">Fill out the form below and we'll get back to you promptly.</p>
+                </div>
+                
+                <!-- Success/Error Messages for AJAX -->
+                <div id="form-messages" class="mb-4" style="display: none;">
+                    <div id="success-alert" class="alert alert-success" style="display: none;">
+                        <i class="fas fa-check-circle"></i> <span id="success-message"></span>
+                    </div>
+                    <div id="error-alert" class="alert alert-danger" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i> <span id="error-message"></span>
+                    </div>
+                </div>
+                
+                <form id="contact-form" method="post" class="contact-form">
                     {% csrf_token %}
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
                             <label for="name" class="form-label required">Full Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ form_data.name|default:'' }}" required>
+                            <div class="invalid-feedback" id="name-error"></div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6">
                             <label for="email" class="form-label required">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ form_data.email|default:'' }}" required>
+                            <div class="invalid-feedback" id="email-error"></div>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                    <div class="row g-3">
+                        <div class="col-md-6">
                             <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone">
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ form_data.phone|default:'' }}"
+                                   placeholder="+1 (555) 123-4567">
+                            <div class="invalid-feedback" id="phone-error"></div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6">
                             <label for="contact_type" class="form-label">Inquiry Type</label>
                             <select class="form-select" id="contact_type" name="contact_type">
-                                <option value="general">General Inquiry</option>
-                                <option value="commission" {% if request.GET.commission %}selected{% endif %}>Commission Request</option>
-                                <option value="media">Media Inquiry</option>
-                                <option value="exhibition">Exhibition Opportunity</option>
-                                <option value="collaboration">Collaboration</option>
+                                <option value="general" {% if form_data.contact_type == 'general' or not form_data.contact_type %}selected{% endif %}>General Inquiry</option>
+                                <option value="commission" {% if form_data.contact_type == 'commission' or request.GET.commission %}selected{% endif %}>Commission Request</option>
+                                <option value="media" {% if form_data.contact_type == 'media' %}selected{% endif %}>Media Inquiry</option>
+                                <option value="exhibition" {% if form_data.contact_type == 'exhibition' %}selected{% endif %}>Exhibition Opportunity</option>
+                                <option value="collaboration" {% if form_data.contact_type == 'collaboration' %}selected{% endif %}>Collaboration</option>
                             </select>
                         </div>
                     </div>
@@ -66,91 +122,115 @@
                     <div class="mb-3">
                         <label for="subject" class="form-label required">Subject</label>
                         <input type="text" class="form-control" id="subject" name="subject" 
-                               value="{% if artwork_id %}Inquiry about Artwork #{{ artwork_id }}{% endif %}" required>
+                               value="{% if artwork_id %}Inquiry about Artwork #{{ artwork_id }}{% else %}{{ form_data.subject|default:'' }}{% endif %}" required>
+                        <div class="invalid-feedback" id="subject-error"></div>
                     </div>
                     
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label for="message" class="form-label required">Message</label>
                         <textarea class="form-control" id="message" name="message" rows="6" 
-                                  placeholder="Please tell us more about your inquiry..." required></textarea>
+                                  placeholder="Please tell us more about your inquiry..." required>{{ form_data.message|default:'' }}</textarea>
+                        <div class="invalid-feedback" id="message-error"></div>
+                        <div class="form-text">
+                            <small class="text-muted">
+                                For commission requests, please include: preferred size, medium, timeline, and budget range.
+                            </small>
+                        </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-paper-plane"></i> Send Message
+                    <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                        <span class="btn-text">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </span>
+                        <span class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Sending...
+                        </span>
                     </button>
                 </form>
             </div>
         </div>
         
-        <!-- Contact Information -->
+        <!-- Contact Information & Map -->
         <div class="col-lg-4">
-            <div class="contact-info-card">
+            <!-- Contact Information -->
+            <div class="contact-info-card mb-4">
                 <h3 class="mb-4">Contact Information</h3>
                 
                 <div class="contact-item mb-4">
                     <div class="contact-icon">
-                        <i class="fas fa-envelope"></i>
+                        <i class="bi bi-envelope"></i>
                     </div>
                     <div class="contact-details">
                         <h5>Email</h5>
-                        <p>info@jasemshuman.com</p>
+                        <p><a href="mailto:jasem_403@hotmail.com">jasem_403@hotmail.com</a></p>
                     </div>
                 </div>
                 
                 <div class="contact-item mb-4">
                     <div class="contact-icon">
-                        <i class="fas fa-phone"></i>
+                        <i class="bi bi-phone"></i>
                     </div>
                     <div class="contact-details">
                         <h5>Phone</h5>
-                        <p>+970 59 123 4567</p>
+                        <p><a href="tel:+972598176787">+972-598176787</a></p>
                     </div>
                 </div>
                 
                 <div class="contact-item mb-4">
                     <div class="contact-icon">
-                        <i class="fas fa-map-marker-alt"></i>
+                        <i class="bi bi-geo-alt"></i>
                     </div>
                     <div class="contact-details">
                         <h5>Studio Location</h5>
-                        <p>Ramallah, Palestine</p>
+                        <p>Al-Bireh, Palestine<br>
+                        <small class="text-muted">Studio visits by appointment</small></p>
                     </div>
                 </div>
                 
                 <div class="contact-item mb-4">
                     <div class="contact-icon">
-                        <i class="fas fa-clock"></i>
+                        <i class="bi bi-clock"></i>
                     </div>
                     <div class="contact-details">
                         <h5>Response Time</h5>
-                        <p>Within 24 hours</p>
+                        <p>Within 24 hours<br>
+                        <small class="text-muted">Monday - Saturday</small></p>
                     </div>
                 </div>
                 
                 <div class="social-links mt-4">
-                    <h5>Follow Jasem</h5>
+                    <h5 class="mb-3">Follow Jasem</h5>
                     <div class="social-icons">
-                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://www.instagram.com/jasem_shuman?igsh=MXU1d3E0am12YmtmbQ==" target="_blank" class="social-icon" title="Follow Jasem on Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="https://www.facebook.com/share/1FkKPrhwMX/" target="_blank" class="social-icon" title="Follow Jasem on Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
                     </div>
                 </div>
             </div>
             
-            <!-- Commission Info -->
-            <div class="commission-info-card mt-4">
-                <h4>Commission Work</h4>
-                <p>
-                    Jasem accepts commissions for both paintings and sculptures. 
-                    Lead time is typically 4-8 weeks depending on the complexity of the piece.
+            <!-- Map -->
+            <div class="map-card mb-4">
+                <h4 class="mb-3">Find Our Studio</h4>
+                <div class="map-container">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d54488.12345!2d35.2!3d31.9!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151ca1c30b8b3e97%3A0x5b7c8b1c5f6a2b3c!2sAl-Bireh%2C%20Palestine!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                        width="100%" 
+                        height="200" 
+                        style="border:0; border-radius: 10px;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+                <p class="map-note">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> 
+                        Studio visits are by appointment only. Please contact us to schedule.
+                    </small>
                 </p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success"></i> Custom paintings</li>
-                    <li><i class="fas fa-check text-success"></i> Sculpture commissions</li>
-                    <li><i class="fas fa-check text-success"></i> Corporate installations</li>
-                    <li><i class="fas fa-check text-success"></i> Portrait work</li>
-                </ul>
             </div>
         </div>
     </div>
@@ -160,80 +240,560 @@
 
 {% block extra_css %}
 <style>
+:root {
+    --contact-primary: #2c3e50;
+    --contact-accent: #d4af37;
+    --contact-success: #27ae60;
+    --contact-light: #f8f9fa;
+    --contact-border: #e9ecef;
+}
+
+/* Hero Section */
+.page-title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--contact-primary);
+    margin-bottom: 1rem;
+}
+
+.contact-hero-stats {
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-5px);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--contact-accent);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Cards */
 .contact-form-card,
 .contact-info-card,
-.commission-info-card {
+.map-card {
     background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    border: 1px solid var(--contact-border);
     height: fit-content;
 }
 
+.contact-form-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--contact-primary), var(--contact-accent));
+}
+
+.form-header h3 {
+    color: var(--contact-primary);
+    font-weight: 600;
+}
+
+/* Form Styling */
+.form-label.required::after {
+    content: ' *';
+    color: #dc3545;
+}
+
+.form-control {
+    border: 2px solid var(--contact-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--contact-accent);
+    box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+}
+
+.form-select {
+    border: 2px solid var(--contact-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--contact-primary), #34495e);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(44, 62, 80, 0.3);
+}
+
+/* Contact Information */
 .contact-item {
     display: flex;
     align-items: flex-start;
+    margin-bottom: 2rem;
 }
 
 .contact-icon {
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--contact-primary), var(--contact-accent));
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 1rem;
+    margin-right: 1.5rem;
     flex-shrink: 0;
+    font-size: 1.2rem;
 }
 
 .contact-details h5 {
-    margin-bottom: 0.25rem;
-    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    color: var(--contact-primary);
+    font-weight: 600;
 }
 
 .contact-details p {
     margin-bottom: 0;
-    color: #666;
+    color: #6c757d;
+    line-height: 1.6;
 }
 
+.contact-details a {
+    color: var(--contact-accent);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.contact-details a:hover {
+    color: var(--contact-primary);
+}
+
+/* Social Links */
 .social-icons {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
 .social-icon {
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
-    background: var(--primary-color);
+    background: linear-gradient(135deg, var(--contact-primary), var(--contact-accent));
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     transition: all 0.3s ease;
+    font-size: 1.1rem;
 }
 
 .social-icon:hover {
-    background: var(--accent-color);
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 8px 20px rgba(44, 62, 80, 0.3);
     color: white;
-    transform: translateY(-2px);
 }
 
-.commission-info-card {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
+/* Map */
+.map-container {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-.commission-info-card h4 {
-    color: var(--primary-color);
+.map-note {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--contact-light);
+    border-radius: 10px;
+    border-left: 4px solid var(--contact-accent);
+}
+
+/* Success Message */
+.success-message {
+    background: linear-gradient(135deg, var(--contact-success), #2ecc71);
+    border: none;
+    color: white;
+    border-radius: 20px;
+    padding: 3rem 2rem;
+}
+
+.success-icon {
+    font-size: 4rem;
     margin-bottom: 1rem;
 }
 
-.commission-info-card ul li {
-    padding: 0.25rem 0;
+.success-message h4 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.success-message p {
+    color: rgba(255,255,255,0.9);
+    font-size: 1.1rem;
+}
+
+/* Form Validation */
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    display: block;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Loading State */
+.btn-loading {
+    opacity: 0.7;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2.5rem;
+    }
+    
+    .contact-form-card,
+    .contact-info-card,
+    .map-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-item {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .contact-item {
+        margin-bottom: 1.5rem;
+    }
+    
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+        margin-right: 1rem;
+    }
+    
+    .social-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.contact-form-card,
+.contact-info-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.contact-info-card {
+    animation-delay: 0.2s;
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contact-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoading = submitBtn.querySelector('.btn-loading');
+    const formMessages = document.getElementById('form-messages');
+    const successAlert = document.getElementById('success-alert');
+    const errorAlert = document.getElementById('error-alert');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+
+    // Phone number formatting
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value.length <= 3) {
+                value = value;
+            } else if (value.length <= 6) {
+                value = value.slice(0, 3) + '-' + value.slice(3);
+            } else {
+                value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+            }
+        }
+        e.target.value = value;
+    });
+
+    // Form submission
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        clearErrors();
+        
+        // Show loading state
+        setLoadingState(true);
+        
+        // Get form data
+        const formData = new FormData(contactForm);
+        const data = {
+            name: formData.get('name').trim(),
+            email: formData.get('email').trim(),
+            phone: formData.get('phone').trim(),
+            contact_type: formData.get('contact_type'),
+            subject: formData.get('subject').trim(),
+            message: formData.get('message').trim()
+        };
+        
+        // Client-side validation
+        const errors = validateForm(data);
+        if (Object.keys(errors).length > 0) {
+            displayErrors(errors);
+            setLoadingState(false);
+            return;
+        }
+        
+        // AJAX submission
+        fetch(contactForm.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            setLoadingState(false);
+            
+            if (data.success) {
+                showSuccess(data.message);
+                contactForm.reset();
+                // Scroll to success message
+                formMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                if (data.errors) {
+                    displayErrors(data.errors);
+                } else {
+                    showError('An error occurred. Please try again.');
+                }
+            }
+        })
+        .catch(error => {
+            setLoadingState(false);
+            showError('Network error. Please check your connection and try again.');
+            console.error('Error:', error);
+        });
+    });
+
+    function validateForm(data) {
+        const errors = {};
+        
+        if (!data.name) {
+            errors.name = 'Name is required';
+        }
+        
+        if (!data.email) {
+            errors.email = 'Email is required';
+        } else if (!isValidEmail(data.email)) {
+            errors.email = 'Please enter a valid email address';
+        }
+        
+        if (!data.subject) {
+            errors.subject = 'Subject is required';
+        }
+        
+        if (!data.message) {
+            errors.message = 'Message is required';
+        } else if (data.message.length < 10) {
+            errors.message = 'Message must be at least 10 characters long';
+        }
+        
+        return errors;
+    }
+
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    function displayErrors(errors) {
+        for (const [field, message] of Object.entries(errors)) {
+            const input = document.getElementById(field);
+            const errorDiv = document.getElementById(field + '-error');
+            
+            if (input && errorDiv) {
+                input.classList.add('is-invalid');
+                errorDiv.textContent = message;
+            }
+        }
+        
+        if (errors.general) {
+            showError(errors.general);
+        }
+    }
+
+    function clearErrors() {
+        const inputs = contactForm.querySelectorAll('.form-control, .form-select');
+        inputs.forEach(input => {
+            input.classList.remove('is-invalid');
+        });
+        
+        const errorDivs = contactForm.querySelectorAll('.invalid-feedback');
+        errorDivs.forEach(div => {
+            div.textContent = '';
+        });
+        
+        formMessages.style.display = 'none';
+        successAlert.style.display = 'none';
+        errorAlert.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+        successMessage.textContent = message;
+        successAlert.style.display = 'block';
+        errorAlert.style.display = 'none';
+        formMessages.style.display = 'block';
+        
+        // Add animation
+        formMessages.style.animation = 'fadeInUp 0.5s ease-out';
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorAlert.style.display = 'block';
+        successAlert.style.display = 'none';
+        formMessages.style.display = 'block';
+    }
+
+    function setLoadingState(loading) {
+        if (loading) {
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+        } else {
+            submitBtn.disabled = false;
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
+        }
+    }
+
+    // Contact type helper text
+    const contactTypeSelect = document.getElementById('contact_type');
+    const messageTextarea = document.getElementById('message');
+    
+    contactTypeSelect.addEventListener('change', function() {
+        const type = this.value;
+        let placeholder = 'Please tell us more about your inquiry...';
+        
+        switch(type) {
+            case 'commission':
+                placeholder = 'Please describe your commission request including preferred size, medium, style, timeline, and budget range...';
+                break;
+            case 'media':
+                placeholder = 'Please provide details about your media inquiry, publication, and deadline...';
+                break;
+            case 'exhibition':
+                placeholder = 'Please provide details about the exhibition opportunity, venue, dates, and requirements...';
+                break;
+            case 'collaboration':
+                placeholder = 'Please describe the collaboration opportunity and how you envision working together...';
+                break;
+        }
+        
+        messageTextarea.placeholder = placeholder;
+    });
+
+    // Smooth scrolling for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Add loading animation to map
+    const mapIframe = document.querySelector('iframe');
+    if (mapIframe) {
+        mapIframe.addEventListener('load', function() {
+            this.style.opacity = '1';
+        });
+        mapIframe.style.opacity = '0';
+        mapIframe.style.transition = 'opacity 0.5s ease';
+    }
+});
+</script>
 {% endblock %}

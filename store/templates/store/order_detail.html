@@ -19,11 +19,20 @@
                 <div class="card-header">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h4 class="mb-0">Order #ORD-001</h4>
-                            <small class="text-muted">Placed on October 15, 2024</small>
+                            <h4 class="mb-0">Order #{{ order.id }}</h4>
+                            <small class="text-muted">Placed on {{ order.created_at|date:"F j, Y g:i A" }}</small>
                         </div>
                         <div class="col-md-4 text-md-end">
-                            <span class="badge bg-success fs-6 px-3 py-2">Delivered</span>
+                            <span class="badge 
+                                {% if order.order_status == 'pending' %}bg-warning
+                                {% elif order.order_status == 'confirmed' %}bg-info
+                                {% elif order.order_status == 'processing' %}bg-primary
+                                {% elif order.order_status == 'shipped' %}bg-secondary
+                                {% elif order.order_status == 'delivered' %}bg-success
+                                {% elif order.order_status == 'cancelled' %}bg-danger
+                                {% else %}bg-light text-dark{% endif %} fs-6 px-3 py-2">
+                                {{ order.get_order_status_display }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -31,31 +40,47 @@
                     <div class="row">
                         <div class="col-md-4">
                             <h6 class="text-muted">Shipping Address</h6>
+                            {% if order.shipping_address %}
                             <address>
-                                <strong>John Doe</strong><br>
-                                123 Art Street<br>
-                                New York, NY 10001<br>
-                                United States<br>
-                                <abbr title="Phone">P:</abbr> (555) 123-4567
+                                <strong>{{ order.shipping_address.full_name }}</strong><br>
+                                {{ order.shipping_address.address_line_1 }}<br>
+                                {% if order.shipping_address.address_line_2 %}
+                                {{ order.shipping_address.address_line_2 }}<br>
+                                {% endif %}
+                                {{ order.shipping_address.city }}{% if order.shipping_address.state %}, {{ order.shipping_address.state }}{% endif %} {{ order.shipping_address.postal_code }}<br>
+                                {{ order.shipping_address.country }}<br>
+                                <abbr title="Phone">P:</abbr> {{ order.shipping_address.phone }}
                             </address>
+                            {% else %}
+                            <p class="text-muted">No shipping address provided</p>
+                            {% endif %}
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted">Payment Method</h6>
+                            {% if order.payment_info %}
                             <p>
-                                <i class="fas fa-credit-card me-2"></i>
-                                Visa ending in 1234<br>
-                                <small class="text-muted">Charged on Oct 15, 2024</small>
+                                <i class="fas fa-{% if order.payment_info.payment_method == 'credit_card' %}credit-card{% elif order.payment_info.payment_method == 'paypal' %}paypal{% else %}money-bill{% endif %} me-2"></i>
+                                {{ order.payment_info.get_payment_method_display }}
+                                {% if order.payment_info.card_last_four %}ending in {{ order.payment_info.card_last_four }}{% endif %}<br>
+                                <small class="text-{% if order.payment_info.is_paid %}success{% else %}warning{% endif %}">
+                                    {% if order.payment_info.is_paid %}
+                                        Paid on {{ order.payment_info.payment_date|date:"M j, Y" }}
+                                    {% else %}
+                                        Payment pending
+                                    {% endif %}
+                                </small>
                             </p>
+                            {% else %}
+                            <p class="text-muted">No payment information</p>
+                            {% endif %}
                         </div>
                         <div class="col-md-4">
-                            <h6 class="text-muted">Tracking Information</h6>
-                            <p>
-                                <strong>Carrier:</strong> FedEx<br>
-                                <strong>Tracking #:</strong> 1234567890<br>
-                                <a href="#" class="btn btn-sm btn-outline-primary mt-2">
-                                    <i class="fas fa-truck me-1"></i>Track Package
-                                </a>
-                            </p>
+                            <h6 class="text-muted">Order Notes</h6>
+                            {% if order.customer_notes %}
+                            <p>{{ order.customer_notes }}</p>
+                            {% else %}
+                            <p class="text-muted">No special instructions</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -79,45 +104,39 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Example order item -->
+                                {% for item in order.items.all %}
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img src="{% static 'images/placeholder-artwork.jpg' %}" alt="Artwork" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% if item.artwork.main_image %}
+                                            <img src="{{ item.artwork.main_image.url }}" alt="{{ item.artwork.title }}" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
+                                            {% endif %}
                                             <div>
-                                                <h6 class="mb-1">Palestinian Landscape</h6>
-                                                <small class="text-muted">Oil on Canvas • 24" × 36"</small>
+                                                <h6 class="mb-1">{{ item.artwork.title }}</h6>
+                                                <small class="text-muted">{{ item.get_item_type_display }} • {{ item.artwork.medium }}{% if item.artwork.dimensions %} • {{ item.artwork.dimensions }}{% endif %}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>1</td>
-                                    <td>$1,250.00</td>
-                                    <td><strong>$1,250.00</strong></td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.unit_price }}</td>
+                                    <td><strong>${{ item.total_price }}</strong></td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <a href="{% url 'gallery:artwork_detail' item.artwork.id %}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye me-1"></i>View
                                         </a>
                                     </td>
                                 </tr>
+                                {% empty %}
                                 <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="{% static 'images/placeholder-artwork.jpg' %}" alt="Artwork" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
-                                            <div>
-                                                <h6 class="mb-1">Abstract Expression</h6>
-                                                <small class="text-muted">Acrylic on Canvas • 18" × 24"</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>1</td>
-                                    <td>$850.00</td>
-                                    <td><strong>$850.00</strong></td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye me-1"></i>View
-                                        </a>
+                                    <td colspan="5" class="text-center py-3">
+                                        <p class="text-muted mb-0">No items in this order</p>
                                     </td>
                                 </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -134,42 +153,136 @@
                         </div>
                         <div class="card-body">
                             <div class="timeline">
+                                <!-- Order Placed - Always completed -->
                                 <div class="timeline-item completed">
                                     <div class="timeline-marker bg-success">
                                         <i class="fas fa-check"></i>
                                     </div>
                                     <div class="timeline-content">
                                         <h6>Order Placed</h6>
-                                        <p class="text-muted mb-0">October 15, 2024 at 2:30 PM</p>
+                                        <p class="text-muted mb-0">{{ order.created_at|date:"F j, Y \a\t g:i A" }}</p>
                                     </div>
                                 </div>
-                                <div class="timeline-item completed">
-                                    <div class="timeline-marker bg-success">
-                                        <i class="fas fa-check"></i>
+                                
+                                <!-- Payment Confirmed -->
+                                <div class="timeline-item {% if order.payment_info and order.payment_info.is_paid %}completed{% else %}pending{% endif %}">
+                                    <div class="timeline-marker {% if order.payment_info and order.payment_info.is_paid %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if order.payment_info and order.payment_info.is_paid %}
+                                            <i class="fas fa-check"></i>
+                                        {% else %}
+                                            <i class="fas fa-clock"></i>
+                                        {% endif %}
                                     </div>
                                     <div class="timeline-content">
                                         <h6>Payment Confirmed</h6>
-                                        <p class="text-muted mb-0">October 15, 2024 at 2:31 PM</p>
+                                        {% if order.payment_info and order.payment_info.is_paid and order.payment_info.payment_date %}
+                                            <p class="text-muted mb-0">{{ order.payment_info.payment_date|date:"F j, Y \a\t g:i A" }}</p>
+                                        {% else %}
+                                            <p class="text-muted mb-0">Waiting for payment confirmation</p>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                <div class="timeline-item completed">
-                                    <div class="timeline-marker bg-success">
-                                        <i class="fas fa-check"></i>
+                                
+                                <!-- Order Confirmed -->
+                                <div class="timeline-item {% if order.order_status == 'confirmed' or order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}completed{% else %}pending{% endif %}">
+                                    <div class="timeline-marker {% if order.order_status == 'confirmed' or order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {% if order.order_status == 'confirmed' or order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}
+                                            <i class="fas fa-check"></i>
+                                        {% else %}
+                                            <i class="fas fa-circle"></i>
+                                        {% endif %}
                                     </div>
                                     <div class="timeline-content">
-                                        <h6>Order Shipped</h6>
-                                        <p class="text-muted mb-0">October 16, 2024 at 10:00 AM</p>
+                                        <h6>Order Confirmed</h6>
+                                        {% if order.order_status == 'confirmed' or order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}
+                                            <p class="text-muted mb-0">Order confirmed by admin</p>
+                                        {% else %}
+                                            <p class="text-muted mb-0">Waiting for admin confirmation</p>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                <div class="timeline-item completed">
-                                    <div class="timeline-marker bg-success">
-                                        <i class="fas fa-check"></i>
+                                
+                                <!-- Processing -->
+                                <div class="timeline-item {% if order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}completed{% elif order.order_status == 'confirmed' %}pending{% else %}future{% endif %}">
+                                    <div class="timeline-marker {% if order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}bg-success{% elif order.order_status == 'confirmed' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {% if order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}
+                                            <i class="fas fa-check"></i>
+                                        {% elif order.order_status == 'confirmed' %}
+                                            <i class="fas fa-clock"></i>
+                                        {% else %}
+                                            <i class="fas fa-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Processing</h6>
+                                        {% if order.order_status == 'processing' or order.order_status == 'shipped' or order.order_status == 'delivered' %}
+                                            <p class="text-muted mb-0">Artwork being prepared for shipping</p>
+                                        {% elif order.order_status == 'confirmed' %}
+                                            <p class="text-muted mb-0">Will begin processing after confirmation</p>
+                                        {% else %}
+                                            <p class="text-muted mb-0">Processing will begin after payment</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Shipped -->
+                                <div class="timeline-item {% if order.order_status == 'shipped' or order.order_status == 'delivered' %}completed{% elif order.order_status == 'processing' %}pending{% else %}future{% endif %}">
+                                    <div class="timeline-marker {% if order.order_status == 'shipped' or order.order_status == 'delivered' %}bg-success{% elif order.order_status == 'processing' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {% if order.order_status == 'shipped' or order.order_status == 'delivered' %}
+                                            <i class="fas fa-check"></i>
+                                        {% elif order.order_status == 'processing' %}
+                                            <i class="fas fa-clock"></i>
+                                        {% else %}
+                                            <i class="fas fa-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Shipped</h6>
+                                        {% if order.order_status == 'shipped' or order.order_status == 'delivered' %}
+                                            <p class="text-muted mb-0">Package is on its way to you</p>
+                                        {% elif order.order_status == 'processing' %}
+                                            <p class="text-muted mb-0">Will ship once processing is complete</p>
+                                        {% else %}
+                                            <p class="text-muted mb-0">Shipping will begin after processing</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Delivered -->
+                                <div class="timeline-item {% if order.order_status == 'delivered' %}completed{% elif order.order_status == 'shipped' %}pending{% else %}future{% endif %}">
+                                    <div class="timeline-marker {% if order.order_status == 'delivered' %}bg-success{% elif order.order_status == 'shipped' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {% if order.order_status == 'delivered' %}
+                                            <i class="fas fa-check"></i>
+                                        {% elif order.order_status == 'shipped' %}
+                                            <i class="fas fa-truck"></i>
+                                        {% else %}
+                                            <i class="fas fa-circle"></i>
+                                        {% endif %}
                                     </div>
                                     <div class="timeline-content">
                                         <h6>Delivered</h6>
-                                        <p class="text-muted mb-0">October 20, 2024 at 3:45 PM</p>
+                                        {% if order.order_status == 'delivered' %}
+                                            <p class="text-muted mb-0">Package delivered successfully</p>
+                                        {% elif order.order_status == 'shipped' %}
+                                            <p class="text-muted mb-0">Tracking delivery progress</p>
+                                        {% else %}
+                                            <p class="text-muted mb-0">Delivery pending</p>
+                                        {% endif %}
                                     </div>
                                 </div>
+                                
+                                <!-- Cancelled Status (if applicable) -->
+                                {% if order.order_status == 'cancelled' %}
+                                <div class="timeline-item cancelled">
+                                    <div class="timeline-marker bg-danger">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6>Order Cancelled</h6>
+                                        <p class="text-muted mb-0">This order has been cancelled</p>
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -184,20 +297,16 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Subtotal:</span>
-                                <span>$2,100.00</span>
+                                <span>${{ order.subtotal }}</span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Shipping:</span>
-                                <span>$50.00</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Tax:</span>
-                                <span>$168.00</span>
+                                <span>${{ order.shipping_cost }}</span>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between">
                                 <strong>Total:</strong>
-                                <strong>$2,318.00</strong>
+                                <strong>${{ order.total_amount }}</strong>
                             </div>
                         </div>
                     </div>
@@ -245,6 +354,26 @@
 
 .timeline-item:last-child {
     margin-bottom: 0;
+}
+
+.timeline-item.completed .timeline-content h6 {
+    color: #28a745;
+}
+
+.timeline-item.pending .timeline-content h6 {
+    color: #ffc107;
+}
+
+.timeline-item.future .timeline-content h6 {
+    color: #6c757d;
+}
+
+.timeline-item.cancelled .timeline-content h6 {
+    color: #dc3545;
+}
+
+.timeline-item.future {
+    opacity: 0.6;
 }
 
 .timeline-marker {

@@ -14,10 +14,10 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'customer_name', 'order_status', 'total_amount', 
-                   'created_at', 'payment_status']
-    list_filter = ['order_status', 'created_at']
+                   'created_at', 'payment_status', 'shipping_country']
+    list_filter = ['order_status', 'created_at', 'payment_info__is_paid', 'shipping_address__country']
     search_fields = ['customer__username', 'customer__email', 
-                    'shipping_address__full_name']
+                    'shipping_address__full_name', 'id']
     readonly_fields = ['total_amount', 'created_at', 'updated_at']
     
     inlines = [OrderItemInline]
@@ -34,9 +34,17 @@ class OrderAdmin(admin.ModelAdmin):
         }),
     )
     
+    actions = ['mark_as_confirmed', 'mark_as_processing', 'mark_as_shipped', 'mark_as_delivered']
+    
     def customer_name(self, obj):
         return obj.customer.get_full_name() or obj.customer.username
     customer_name.short_description = 'Customer'
+    
+    def shipping_country(self, obj):
+        if hasattr(obj, 'shipping_address'):
+            return obj.shipping_address.country
+        return "No address"
+    shipping_country.short_description = 'Ship To'
     
     def payment_status(self, obj):
         if hasattr(obj, 'payment_info'):
@@ -50,8 +58,28 @@ class OrderAdmin(admin.ModelAdmin):
         return "No payment info"
     payment_status.short_description = 'Payment Status'
     
+    def mark_as_confirmed(self, request, queryset):
+        queryset.update(order_status='confirmed')
+        self.message_user(request, f'{queryset.count()} orders marked as confirmed.')
+    mark_as_confirmed.short_description = 'Mark as Confirmed'
+    
+    def mark_as_processing(self, request, queryset):
+        queryset.update(order_status='processing')
+        self.message_user(request, f'{queryset.count()} orders marked as processing.')
+    mark_as_processing.short_description = 'Mark as Processing'
+    
+    def mark_as_shipped(self, request, queryset):
+        queryset.update(order_status='shipped')
+        self.message_user(request, f'{queryset.count()} orders marked as shipped.')
+    mark_as_shipped.short_description = 'Mark as Shipped'
+    
+    def mark_as_delivered(self, request, queryset):
+        queryset.update(order_status='delivered')
+        self.message_user(request, f'{queryset.count()} orders marked as delivered.')
+    mark_as_delivered.short_description = 'Mark as Delivered'
+    
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('customer', 'payment_info')
+        return super().get_queryset(request).select_related('customer', 'payment_info', 'shipping_address')
 
 
 @admin.register(OrderItem)

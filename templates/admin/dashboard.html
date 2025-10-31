@@ -1,0 +1,240 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-4">Order Management Dashboard</h1>
+    
+    <!-- Order Status Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">Pending Orders</h5>
+                    <h2 class="card-text">{{ pending_orders }}</h2>
+                    <small class="text-muted">Require confirmation</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info">Processing</h5>
+                    <h2 class="card-text">{{ processing_orders }}</h2>
+                    <small class="text-muted">Being prepared</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">Shipped</h5>
+                    <h2 class="card-text">{{ shipped_orders }}</h2>
+                    <small class="text-muted">In transit</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success">Total Orders</h5>
+                    <h2 class="card-text">{{ total_orders }}</h2>
+                    <small class="text-muted">All time</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Revenue Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <h3 class="text-success">${{ total_revenue }}</h3>
+                    <small class="text-muted">All confirmed orders</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">This Week</h5>
+                    <h3 class="text-primary">${{ weekly_revenue }}</h3>
+                    <small class="text-muted">Last 7 days</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Orders and Statistics -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'admin:store_order_change' order.pk %}" class="text-decoration-none">
+                                            #{{ order.id }}
+                                        </a>
+                                    </td>
+                                    <td>{{ order.customer.get_full_name|default:order.customer.username }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if order.order_status == 'pending' %}bg-warning
+                                            {% elif order.order_status == 'confirmed' %}bg-info
+                                            {% elif order.order_status == 'processing' %}bg-primary
+                                            {% elif order.order_status == 'shipped' %}bg-secondary
+                                            {% elif order.order_status == 'delivered' %}bg-success
+                                            {% else %}bg-light text-dark{% endif %}">
+                                            {{ order.get_order_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>${{ order.total_amount }}</td>
+                                    <td>{{ order.created_at|date:"M j" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No orders yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <!-- Popular Artworks -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Popular Artworks</h5>
+                </div>
+                <div class="card-body">
+                    {% if popular_artworks %}
+                    <ul class="list-unstyled">
+                        {% for item in popular_artworks %}
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{{ item.artwork__title|truncatechars:30 }}</span>
+                            <span class="badge bg-primary">{{ item.total_sold }} sold</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No sales data yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Top Countries -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Countries</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_countries %}
+                    <ul class="list-unstyled">
+                        {% for country in top_countries %}
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{{ country.shipping_address__country }}</span>
+                            <span class="badge bg-secondary">{{ country.order_count }} orders</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No shipping data yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:store_order_changelist' %}?order_status__exact=pending" class="btn btn-warning btn-block mb-2">
+                                View Pending Orders
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:store_order_changelist' %}?order_status__exact=processing" class="btn btn-info btn-block mb-2">
+                                View Processing Orders
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:store_paymentinfo_changelist' %}?is_paid__exact=0" class="btn btn-secondary btn-block mb-2">
+                                Unpaid Orders
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin:store_order_add' %}" class="btn btn-primary btn-block mb-2">
+                                Create Manual Order
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Management Guide -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6 class="alert-heading">📋 Order Management Workflow</h6>
+                <p class="mb-2"><strong>1. Pending → Confirmed:</strong> Verify payment and confirm order</p>
+                <p class="mb-2"><strong>2. Confirmed → Processing:</strong> Prepare artwork for shipping</p>
+                <p class="mb-2"><strong>3. Processing → Shipped:</strong> Package and ship to customer</p>
+                <p class="mb-0"><strong>4. Shipped → Delivered:</strong> Confirm delivery and follow up</p>
+                <hr>
+                <p class="mb-0">📖 <strong>Full Guide:</strong> See ORDER_MANAGEMENT_GUIDE.md for detailed instructions</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1rem;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

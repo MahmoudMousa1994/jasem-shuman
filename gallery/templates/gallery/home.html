@@ -69,7 +69,7 @@
                     <div class="category-info">
                         <h3>{{ category_info.category.get_name_display }}</h3>
                         <p>{{ category_info.count }} artwork{{ category_info.count|pluralize }}</p>
-                        <a href="{% url 'gallery:category' category_info.category.name %}" 
+                        <a href="{% url 'store:category' category_info.category.name %}" 
                            class="btn btn-light btn-sm">Explore Collection</a>
                     </div>
                     {% endif %}
