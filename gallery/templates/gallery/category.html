@@ -85,9 +85,13 @@
                                         data-second-available="{{ artwork.second_option_available }}"
                                         data-second-name="{{ artwork.second_option_name }}"
                                         data-second-price="{{ artwork.second_option_price }}">
-                                    Add to Cart
+                                    <i class="bi bi-bag"></i> Add to Cart
                                 </button>
                                 {% endif %}
+                                <button class="btn btn-gold btn-sm ms-2 wishlist-btn"
+                                        data-artwork-id="{{ artwork.id }}">
+                                    <i class="bi bi-heart"></i> Add to Wishlist
+                                </button>
                             </div>
                             <div class="artwork-status">
                                 {% if artwork.featured %}
@@ -129,6 +133,31 @@
                             {{ artwork.description|truncatewords:15 }}
                         </p>
                         {% endif %}
+                        
+                        <!-- Action Buttons -->
+                        <div class="artwork-buttons mt-3">
+                            <div class="btn-group w-100" role="group">
+                                {% if artwork.original_available or artwork.second_option_available %}
+                                <button class="btn btn-primary btn-sm add-to-cart-btn"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#addToCartModal"
+                                        data-artwork-id="{{ artwork.id }}"
+                                        data-artwork-title="{{ artwork.title }}"
+                                        data-artwork-image="{{ artwork.main_image.url }}"
+                                        data-original-available="{{ artwork.original_available }}"
+                                        data-original-price="{{ artwork.original_price }}"
+                                        data-second-available="{{ artwork.second_option_available }}"
+                                        data-second-name="{{ artwork.second_option_name }}"
+                                        data-second-price="{{ artwork.second_option_price }}">
+                                    <i class="bi bi-bag"></i> Add to Cart
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-gold btn-sm wishlist-btn"
+                                        data-artwork-id="{{ artwork.id }}">
+                                    <i class="bi bi-heart"></i> Add to Wishlist
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -167,10 +196,23 @@
                            class="btn btn-primary btn-sm">View Details</a>
                         {% if artwork.original_available or artwork.second_option_available %}
                         <button class="btn btn-outline-primary btn-sm ms-2 add-to-cart-btn"
-                                data-artwork-id="{{ artwork.id }}">
-                            Add to Cart
+                                data-bs-toggle="modal" 
+                                data-bs-target="#addToCartModal"
+                                data-artwork-id="{{ artwork.id }}"
+                                data-artwork-title="{{ artwork.title }}"
+                                data-artwork-image="{{ artwork.main_image.url }}"
+                                data-original-available="{{ artwork.original_available }}"
+                                data-original-price="{{ artwork.original_price }}"
+                                data-second-available="{{ artwork.second_option_available }}"
+                                data-second-name="{{ artwork.second_option_name }}"
+                                data-second-price="{{ artwork.second_option_price }}">
+                            <i class="bi bi-bag"></i> Add to Cart
                         </button>
                         {% endif %}
+                        <button class="btn btn-gold btn-sm ms-2 wishlist-btn"
+                                data-artwork-id="{{ artwork.id }}">
+                            <i class="bi bi-heart"></i> Add to Wishlist
+                        </button>
                     </div>
                 </div>
             </div>
@@ -260,6 +302,64 @@ $(document).ready(function() {
     $('.add-to-cart-btn').on('click', function() {
         // Modal functionality is handled by Bootstrap and the gallery modal code
         console.log('Add to cart modal will open for artwork:', $(this).data('artwork-id'));
+    });
+    
+    // Add to wishlist functionality
+    $('.wishlist-btn').on('click', function() {
+        const button = $(this);
+        const artworkId = button.data('artwork-id');
+        const originalHtml = button.html();
+        
+        // Show loading state
+        button.html('<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
+        button.prop('disabled', true);
+        
+        // Get CSRF token
+        const csrfToken = getCookie('csrftoken');
+        
+        // Make AJAX request
+        $.ajax({
+            url: '{% url "accounts:add_to_wishlist" %}',
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                artwork_id: artworkId,
+                item_type: 'original'  // Default to original, user can change in wishlist
+            }),
+            success: function(data) {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    
+                    // Change button to "Added" state temporarily
+                    button.html('<i class="bi bi-heart-fill"></i> Added to Wishlist');
+                    button.removeClass('btn-gold').addClass('btn-success');
+                    
+                    // Revert after 3 seconds
+                    setTimeout(function() {
+                        button.html(originalHtml);
+                        button.removeClass('btn-success').addClass('btn-gold');
+                        button.prop('disabled', false);
+                    }, 3000);
+                } else {
+                    showMessage(data.message, 'error');
+                    button.html(originalHtml);
+                    button.prop('disabled', false);
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 403 || xhr.status === 401) {
+                    showMessage('Please log in to add items to your wishlist', 'info');
+                    window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                } else {
+                    showMessage('An error occurred while adding to wishlist', 'error');
+                }
+                button.html(originalHtml);
+                button.prop('disabled', false);
+            }
+        });
     });
 });
 </script>
@@ -565,6 +665,26 @@ function showMessage(message, type = 'info') {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+}
+
+/* Gold Button Styling */
+.btn-gold {
+    background-color: #d4af37;
+    border-color: #d4af37;
+    color: #ffffff;
+}
+
+.btn-gold:hover {
+    background-color: #b8941f;
+    border-color: #b8941f;
+    color: #ffffff;
+}
+
+.btn-gold:focus,
+.btn-gold:active {
+    background-color: #b8941f;
+    border-color: #b8941f;
+    color: #ffffff;
 }
 
 @media (max-width: 768px) {

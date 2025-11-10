@@ -76,21 +76,27 @@
                             {% endif %}
                         </div>
                         <div class="artwork-actions">
-                            {% if artwork.original_available or artwork.second_option_available %}
-                            <button class="btn btn-primary btn-sm add-to-cart-btn"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#addToCartModal"
-                                    data-artwork-id="{{ artwork.id }}"
-                                    data-artwork-title="{{ artwork.title }}"
-                                    data-artwork-image="{{ artwork.main_image.url }}"
-                                    data-original-available="{{ artwork.original_available }}"
-                                    data-original-price="{{ artwork.original_price }}"
-                                    data-second-available="{{ artwork.second_option_available }}"
-                                    data-second-name="{{ artwork.second_option_name }}"
-                                    data-second-price="{{ artwork.second_option_price }}">
-                                Add to Cart
-                            </button>
-                            {% endif %}
+                            <div class="btn-group w-100" role="group">
+                                {% if artwork.original_available or artwork.second_option_available %}
+                                <button class="btn btn-primary btn-sm add-to-cart-btn"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#addToCartModal"
+                                        data-artwork-id="{{ artwork.id }}"
+                                        data-artwork-title="{{ artwork.title }}"
+                                        data-artwork-image="{{ artwork.main_image.url }}"
+                                        data-original-available="{{ artwork.original_available }}"
+                                        data-original-price="{{ artwork.original_price }}"
+                                        data-second-available="{{ artwork.second_option_available }}"
+                                        data-second-name="{{ artwork.second_option_name }}"
+                                        data-second-price="{{ artwork.second_option_price }}">
+                                    <i class="bi bi-bag"></i> Add to Cart
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-gold btn-sm wishlist-btn"
+                                        data-artwork-id="{{ artwork.id }}">
+                                    <i class="bi bi-heart"></i> Add to Wishlist
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -358,6 +364,60 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Add to wishlist functionality
+    document.querySelectorAll('.wishlist-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const artworkId = this.dataset.artworkId;
+            const originalHtml = this.innerHTML;
+            
+            // Show loading state
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Adding...';
+            this.disabled = true;
+            
+            fetch(`/account/wishlist/add/${artworkId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: 'item_type=original'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    
+                    // Change button to "Added" state temporarily
+                    this.innerHTML = '<i class="bi bi-heart-fill"></i> Added to Wishlist';
+                    this.classList.remove('btn-gold');
+                    this.classList.add('btn-success');
+                    
+                    // Revert after 3 seconds
+                    setTimeout(() => {
+                        this.innerHTML = originalHtml;
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-gold');
+                        this.disabled = false;
+                    }, 3000);
+                } else {
+                    showMessage(data.message, 'error');
+                    this.innerHTML = originalHtml;
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                if (error.message.includes('403') || error.message.includes('401')) {
+                    showMessage('Please log in to add items to your wishlist', 'info');
+                    window.location.href = '/accounts/login/?next=' + encodeURIComponent(window.location.pathname);
+                } else {
+                    showMessage('An error occurred while adding to wishlist', 'error');
+                }
+                this.innerHTML = originalHtml;
+                this.disabled = false;
+            });
+        });
+    });
+
     // Message system
     function showMessage(message, type = 'info') {
         const alertType = type === 'error' ? 'danger' : type;
@@ -382,4 +442,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Gold Button Styling */
+.btn-gold {
+    background-color: #d4af37;
+    border-color: #d4af37;
+    color: #ffffff;
+}
+
+.btn-gold:hover {
+    background-color: #b8941f;
+    border-color: #b8941f;
+    color: #ffffff;
+}
+
+.btn-gold:focus,
+.btn-gold:active {
+    background-color: #b8941f;
+    border-color: #b8941f;
+    color: #ffffff;
+}
+
+/* Button group adjustments */
+.btn-group .btn {
+    flex: 1;
+}
+</style>
 {% endblock %}

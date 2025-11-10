@@ -533,12 +533,53 @@ $(document).ready(function() {
         });
     });
     
-    // Wishlist functionality
+    // Wishlist functionality - directly add to wishlist
     $('.wishlist-btn').on('click', function() {
         const artworkId = $(this).data('artwork-id');
-        // Will implement in accounts app
-        showMessage('Wishlist functionality coming soon!', 'info');
+        const button = $(this);
+        
+        // Check if user is authenticated
+        {% if user.is_authenticated %}
+            // Directly add to wishlist with 'original' as default
+            addToWishlist(artworkId, 'original', button);
+        {% else %}
+            showMessage('Please login to add items to your wishlist.', 'info');
+        {% endif %}
     });
+    
+
+    
+    function addToWishlist(artworkId, itemType, button) {
+        const originalText = button.html();
+        button.html('<i class="spinner-border spinner-border-sm"></i> Adding...');
+        button.prop('disabled', true);
+        
+        $.post('{% url "accounts:add_to_wishlist" 0 %}'.replace('0', artworkId), {
+            'item_type': itemType,
+            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+        })
+        .done(function(data) {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                button.removeClass('btn-outline-secondary').addClass('btn-success');
+                button.html('<i class="fas fa-heart"></i> Added to Wishlist');
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .fail(function() {
+            showMessage('Error adding to wishlist. Please try again.', 'error');
+        })
+        .always(function() {
+            setTimeout(function() {
+                button.html(originalText);
+                button.prop('disabled', false);
+                if (button.hasClass('btn-success')) {
+                    button.removeClass('btn-success').addClass('btn-outline-secondary');
+                }
+            }, 2000);
+        });
+    }
 });
 
 // Helper function to get CSRF token from cookies
