@@ -63,14 +63,14 @@
                     {% if category_info.sample_artwork %}
                     <div class="category-image">
                         <img src="{{ category_info.sample_artwork.main_image.url }}" 
-                             alt="{{ category_info.category.get_name_display }}"
-                             class="category-img">
+                            alt="{{ category_info.category.display_name }}"
+                            class="category-img">
                     </div>
                     <div class="category-info">
-                        <h3>{{ category_info.category.get_name_display }}</h3>
+                        <h3>{{ category_info.category.display_name }}</h3>
                         <p>{{ category_info.count }} artwork{{ category_info.count|pluralize }}</p>
                         <a href="{% url 'store:category' category_info.category.name %}" 
-                           class="btn btn-light btn-sm">Explore Collection</a>
+                            class="btn btn-light btn-sm">Explore Collection</a>
                     </div>
                     {% endif %}
                 </div>
@@ -100,8 +100,8 @@
                 <div class="artwork-card">
                     <div class="artwork-image">
                         <img src="{{ artwork.main_image.url }}" 
-                             alt="{{ artwork.title }}"
-                             class="featured-img">
+                            alt="{{ artwork.title }}"
+                            class="featured-img">
                     </div>
                     <div class="artwork-info">
                         <h4 class="artwork-title">{{ artwork.title }}</h4>
@@ -122,7 +122,7 @@
                         </div>
                         <div class="artwork-actions">
                             <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
-                               class="btn btn-primary btn-sm">View Details</a>
+                                class="btn btn-primary btn-sm">View Details</a>
                             {% if artwork.original_available or artwork.second_option_available %}
                             <button class="btn btn-outline-primary btn-sm ms-2 add-to-cart-btn"
                                     data-bs-toggle="modal" 
@@ -152,6 +152,65 @@
     </div>
 </section>
 
+<!-- Exhibitions Section -->
+{% if exhibitions %}
+<section class="exhibitions-section py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-title">Exhibitions & Events</h2>
+                <p class="section-subtitle">
+                    Recent exhibitions, conventions, and workshops featuring Jasem's work
+                </p>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for exhibition in exhibitions %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="exhibition-card h-100">
+                    {% if exhibition.poster_image %}
+                    <div class="exhibition-image">
+                        <img src="{{ exhibition.poster_image.url }}" 
+                            alt="{{ exhibition.title }}"
+                            class="w-100"
+                            style="height: 250px; object-fit: cover;">
+                    </div>
+                    {% endif %}
+                    <div class="exhibition-body p-4">
+                        <span class="badge bg-dark mb-2">{{ exhibition.get_exhibition_type_display }}</span>
+                        <h4 class="exhibition-title">{{ exhibition.title }}</h4>
+                        <p class="exhibition-venue mb-2">
+                            <i class="bi bi-building"></i> {{ exhibition.venue }}
+                        </p>
+                        <p class="exhibition-location mb-2">
+                            <i class="bi bi-geo-alt"></i> {{ exhibition.location_display }}
+                        </p>
+                        <p class="exhibition-date mb-3">
+                            <i class="bi bi-calendar"></i> {{ exhibition.date_display }}
+                        </p>
+                        {% if exhibition.role %}
+                        <p class="exhibition-role mb-3">
+                            <i class="bi bi-person"></i> <strong>{{ exhibition.role }}</strong>
+                        </p>
+                        {% endif %}
+                        {% if exhibition.description %}
+                        <p class="exhibition-description text-muted">{{ exhibition.description|truncatewords:30 }}</p>
+                        {% endif %}
+                        {% if exhibition.website_url %}
+                        <a href="{{ exhibition.website_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            Learn More <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 <!-- Recent Works Section -->
 <section class="recent-works py-5">
     <div class="container">
@@ -176,7 +235,7 @@
                     </div>
                     <div class="artwork-info text-center mt-3">
                         <h5 class="artwork-title">{{ artwork.title }}</h5>
-                        <p class="artwork-category text-muted">{{ artwork.category.get_name_display }}</p>
+                        <p class="artwork-category text-muted">{{ artwork.category.display_name }}</p>
                         <a href="{% url 'gallery:artwork_detail' artwork.pk %}" 
                            class="btn btn-outline-primary btn-sm">View Details</a>
                     </div>

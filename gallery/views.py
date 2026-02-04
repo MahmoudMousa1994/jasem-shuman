@@ -8,22 +8,31 @@ from .models import Artwork, Category
 def gallery_home(request):
     """Homepage with featured artworks and gallery overview"""
     # Get hero image from site settings or fallback to first featured artwork
-    from pages.models import SiteSettings
+    from pages.models import SiteSettings, GalleryPageSettings, Exhibition
+    
     try:
         settings = SiteSettings.objects.first()
         hero_artwork = settings.hero_image if settings and settings.hero_image else None
     except:
         hero_artwork = None
     
+    # Get gallery page settings
+    try:
+        gallery_settings = GalleryPageSettings.objects.first()
+    except:
+        gallery_settings = None
+    
     # Get featured artworks
-    featured_artworks = Artwork.objects.filter(featured=True, is_active=True)[:6]
+    featured_count = gallery_settings.featured_artworks_count if gallery_settings else 6
+    featured_artworks = Artwork.objects.filter(featured=True, is_active=True)[:featured_count]
     
     # If no hero artwork selected in settings, use first featured artwork
     if not hero_artwork and featured_artworks:
         hero_artwork = featured_artworks.first()
     
     # Get recent artworks
-    recent_artworks = Artwork.objects.filter(is_active=True).order_by('-created_at')[:8]
+    recent_count = gallery_settings.recent_artworks_count if gallery_settings else 8
+    recent_artworks = Artwork.objects.filter(is_active=True).order_by('-created_at')[:recent_count]
     
     # Get categories with artwork counts
     categories = Category.objects.all()
@@ -39,11 +48,16 @@ def gallery_home(request):
                 'sample_artwork': sample_artwork
             })
     
+    # Get upcoming/recent exhibitions for gallery page
+    exhibitions = Exhibition.objects.filter(is_featured=True)[:3]
+    
     context = {
         'hero_artwork': hero_artwork,
         'featured_artworks': featured_artworks,
         'recent_artworks': recent_artworks,
         'categories': category_data,
+        'exhibitions': exhibitions,
+        'gallery_settings': gallery_settings,
         'page_title': 'Jasem Shuman - Contemporary Palestinian Artist',
         'meta_description': 'Explore the contemporary Palestinian artwork of Jasem Shuman. Original paintings and sculptures available for purchase.',
     }
@@ -103,8 +117,8 @@ def category_view(request, category_name):
         'category': category,
         'artworks': artworks,
         'search_query': search_query,
-        'page_title': f'{category.get_name_display()} - Jasem Shuman Art',
-        'meta_description': f'Browse {category.get_name_display().lower()} by Palestinian artist Jasem Shuman.',
+        'page_title': f'{category.display_name} - Jasem Shuman Art',
+        'meta_description': f'Browse {category.display_name.lower()} by Palestinian artist Jasem Shuman.',
     }
     return render(request, 'gallery/category.html', context)
 
@@ -134,7 +148,7 @@ def artwork_api(request):
             'image_url': artwork.main_image.url if artwork.main_image else '',
             'original_price': str(artwork.original_price),
             'second_option_price': str(artwork.second_option_price),
-            'category': artwork.category.get_name_display(),
+            'category': artwork.category.display_name,
             'url': f'/artwork/{artwork.id}/',
             'original_available': artwork.original_available,
             'second_option_available': artwork.second_option_available,

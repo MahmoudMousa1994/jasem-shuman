@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import (Page, Testimonial, NewsUpdate, ContactSubmission, 
-                    SocialMediaLink, SiteSettings)
+                    SocialMediaLink, SiteSettings, GalleryPageSettings,
+                    ArtistEducation, ArtistAward, Exhibition, ArtistPublication)
 
 
 @admin.register(Page)
@@ -164,3 +165,154 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Prevent deletion of settings
         return False
+
+
+@admin.register(GalleryPageSettings)
+class GalleryPageSettingsAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ('Hero Section', {
+            'fields': ('hero_title', 'hero_subtitle', 'hero_description')
+        }),
+        ('Featured Section', {
+            'fields': ('show_featured_section', 'featured_section_title', 
+                      'featured_section_subtitle', 'featured_artworks_count')
+        }),
+        ('Recent Works Section', {
+            'fields': ('show_recent_section', 'recent_section_title', 
+                      'recent_section_subtitle', 'recent_artworks_count')
+        }),
+        ('Categories Section', {
+            'fields': ('show_categories_section', 'categories_section_title', 
+                      'categories_section_subtitle')
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        # Prevent multiple instances
+        return not GalleryPageSettings.objects.exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        # Prevent deletion of settings
+        return False
+
+
+@admin.register(ArtistEducation)
+class ArtistEducationAdmin(admin.ModelAdmin):
+    list_display = ['degree_title', 'institution', 'location', 'year_range', 'display_order']
+    list_filter = ['year_start', 'year_end']
+    search_fields = ['degree_title', 'institution', 'location']
+    ordering = ['display_order', '-year_start']
+    
+    fieldsets = (
+        ('Education Details', {
+            'fields': ('degree_title', 'institution', 'location')
+        }),
+        ('Time Period', {
+            'fields': ('year_start', 'year_end')
+        }),
+        ('Additional Information', {
+            'fields': ('description', 'display_order')
+        }),
+    )
+    
+    def year_range(self, obj):
+        return f"{obj.year_start}-{obj.year_end if obj.year_end else 'Present'}"
+    year_range.short_description = 'Years'
+
+
+@admin.register(ArtistAward)
+class ArtistAwardAdmin(admin.ModelAdmin):
+    list_display = ['award_title', 'organization', 'year', 'has_certificate', 'display_order']
+    list_filter = ['year']
+    search_fields = ['award_title', 'organization']
+    ordering = ['display_order', '-year']
+    
+    fieldsets = (
+        ('Award Details', {
+            'fields': ('award_title', 'organization', 'year')
+        }),
+        ('Additional Information', {
+            'fields': ('description', 'certificate_image', 'display_order')
+        }),
+    )
+    
+    def has_certificate(self, obj):
+        if obj.certificate_image:
+            return format_html('<span style="color: green;">✓</span>')
+        return format_html('<span style="color: red;">✗</span>')
+    has_certificate.short_description = 'Certificate'
+
+
+@admin.register(Exhibition)
+class ExhibitionAdmin(admin.ModelAdmin):
+    list_display = ['title', 'exhibition_type', 'venue', 'location_short', 'start_date', 'is_featured']
+    list_filter = ['exhibition_type', 'is_featured', 'start_date', 'country']
+    search_fields = ['title', 'venue', 'city', 'country', 'description']
+    filter_horizontal = ['featured_artworks']
+    ordering = ['-start_date', 'display_order']
+    
+    fieldsets = (
+        ('Event Information', {
+            'fields': ('title', 'exhibition_type', 'role')
+        }),
+        ('Location', {
+            'fields': ('venue', 'city', 'country')
+        }),
+        ('Dates', {
+            'fields': ('start_date', 'end_date')
+        }),
+        ('Details', {
+            'fields': ('description', 'website_url', 'poster_image')
+        }),
+        ('Related Content', {
+            'fields': ('featured_artworks',)
+        }),
+        ('Display Options', {
+            'fields': ('is_featured', 'display_order')
+        }),
+    )
+    
+    def location_short(self, obj):
+        return f"{obj.city}, {obj.country}"
+    location_short.short_description = 'Location'
+    
+    actions = ['mark_as_featured']
+    
+    def mark_as_featured(self, request, queryset):
+        updated = queryset.update(is_featured=True)
+        self.message_user(request, f'{updated} exhibitions marked as featured.')
+    mark_as_featured.short_description = 'Mark as featured'
+
+
+@admin.register(ArtistPublication)
+class ArtistPublicationAdmin(admin.ModelAdmin):
+    list_display = ['title', 'publication_type', 'publication_name', 'publication_date', 
+                   'has_url', 'has_pdf']
+    list_filter = ['publication_type', 'publication_date']
+    search_fields = ['title', 'publication_name', 'author', 'description']
+    ordering = ['-publication_date', 'display_order']
+    
+    fieldsets = (
+        ('Publication Details', {
+            'fields': ('title', 'publication_type', 'publication_name', 'author', 'publication_date')
+        }),
+        ('Content', {
+            'fields': ('description', 'url', 'pdf_file', 'cover_image')
+        }),
+        ('Display Options', {
+            'fields': ('display_order',)
+        }),
+    )
+    
+    def has_url(self, obj):
+        if obj.url:
+            return format_html('<span style="color: green;">✓</span>')
+        return format_html('<span style="color: red;">✗</span>')
+    has_url.short_description = 'Online'
+    
+    def has_pdf(self, obj):
+        if obj.pdf_file:
+            return format_html('<span style="color: green;">✓</span>')
+        return format_html('<span style="color: red;">✗</span>')
+    has_pdf.short_description = 'PDF'
+

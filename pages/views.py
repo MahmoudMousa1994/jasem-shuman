@@ -14,13 +14,25 @@ logger = logging.getLogger(__name__)
 
 def about(request):
     """About page view"""
+    from .models import ArtistEducation, ArtistAward, Exhibition, ArtistPublication
+    
     try:
         about_page = Page.objects.get(page_type='about', is_published=True)
     except Page.DoesNotExist:
         about_page = None
     
+    # Get artist education and credentials
+    education_list = ArtistEducation.objects.all()
+    awards_list = ArtistAward.objects.all()
+    exhibitions_list = Exhibition.objects.filter(is_featured=True)[:6]  # Show featured exhibitions
+    publications_list = ArtistPublication.objects.all()[:5]  # Show recent 5 publications
+    
     context = {
         'page': about_page,
+        'education_list': education_list,
+        'awards_list': awards_list,
+        'exhibitions_list': exhibitions_list,
+        'publications_list': publications_list,
         'page_title': 'About Jasem Shuman - Palestinian Contemporary Artist',
         'meta_description': 'Learn about Jasem Shuman, a contemporary Palestinian artist creating powerful paintings and sculptures.',
     }

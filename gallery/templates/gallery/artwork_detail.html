@@ -14,9 +14,9 @@
                 <!-- Main Image -->
                 <div class="main-image mb-4">
                     <img src="{{ artwork.main_image.url }}" 
-                         alt="{{ artwork.title }}"
-                         class="img-fluid main-artwork-image"
-                         id="mainArtworkImage">
+                        alt="{{ artwork.title }}"
+                        class="img-fluid main-artwork-image"
+                        id="mainArtworkImage">
                 </div>
                 
                 <!-- Sculpture Additional Images (if applicable) -->
@@ -26,17 +26,17 @@
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <img src="{{ artwork.main_image.url }}" 
-                                 alt="{{ artwork.title }} - Main view"
-                                 class="img-fluid sculpture-thumb active"
-                                 onclick="changeMainImage('{{ artwork.main_image.url }}')">
+                                alt="{{ artwork.title }} - Main view"
+                                class="img-fluid sculpture-thumb active"
+                                onclick="changeMainImage('{{ artwork.main_image.url }}')">
                             <small class="d-block text-center mt-1">Main View</small>
                         </div>
                         {% for image in sculpture_images %}
                         <div class="col-md-3 mb-3">
                             <img src="{{ image.image.url }}" 
-                                 alt="{{ artwork.title }} - {{ image.angle_description }}"
-                                 class="img-fluid sculpture-thumb"
-                                 onclick="changeMainImage('{{ image.image.url }}')">
+                                alt="{{ artwork.title }} - {{ image.angle_description }}"
+                                class="img-fluid sculpture-thumb"
+                                onclick="changeMainImage('{{ image.image.url }}')">
                             <small class="d-block text-center mt-1">{{ image.angle_description }}</small>
                         </div>
                         {% endfor %}
@@ -64,7 +64,7 @@
                 <div class="artwork-header mb-4">
                     <h1 class="artwork-title">{{ artwork.title }}</h1>
                     <p class="artwork-meta">
-                        <span class="category">{{ artwork.category.get_name_display }}</span> • 
+                        <span class="category">{{ artwork.category.display_name }}</span> • 
                         <span class="year">{{ artwork.artwork_creation_date.year }}</span>
                     </p>
                     <p class="artwork-age text-muted">
@@ -74,85 +74,60 @@
                 
                 <!-- Pricing and Purchase Options -->
                 <div class="purchase-options mb-4">
-                    <h4>Purchase Options</h4>
+                    <h4>Purchase Information</h4>
                     
-                    <!-- Original Artwork -->
-                    {% if artwork.original_available %}
-                    <div class="price-option original-option">
+                    <!-- Single Price Option -->
+                    <div class="price-option mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <strong>Original Artwork</strong>
-                            <span class="price h5 mb-0">${{ artwork.original_price }}</span>
+                            <strong class="fs-5">Price</strong>
+                            <span class="price h4 mb-0 text-primary">${{ artwork.price }}</span>
                         </div>
-                        <p class="option-details">
-                            {{ artwork.original_dimensions_display }}
+                        
+                        <!-- Dimensions -->
+                        {% if artwork.dimensions_display %}
+                        <p class="option-details mb-2">
+                            <i class="bi bi-rulers"></i> {{ artwork.dimensions_display }}
                         </p>
-                        <button class="btn btn-primary w-100 add-to-cart-btn" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#addToCartModal"
-                                data-artwork-id="{{ artwork.id }}"
-                                data-artwork-title="{{ artwork.title }}"
-                                data-artwork-image="{{ artwork.main_image.url }}"
-                                data-original-available="{{ artwork.original_available }}"
-                                data-original-price="{{ artwork.original_price }}"
-                                data-second-available="false"
-                                data-second-name=""
-                                data-second-price="0"
-                                data-preferred-type="original">
-                            Add Original to Cart
-                        </button>
-                    </div>
-                    {% else %}
-                    <div class="price-option sold-option">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <strong>Original Artwork</strong>
-                            <span class="badge bg-secondary">SOLD</span>
-                        </div>
-                        <p class="option-details text-muted">
-                            {{ artwork.original_dimensions_display }}
-                        </p>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Second Option (Prints/Photo Set) -->
-                    {% if artwork.second_option_available %}
-                    <div class="price-option second-option mt-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <strong>{{ artwork.second_option_name }}</strong>
-                            <span class="price h5 mb-0">${{ artwork.second_option_price }}</span>
-                        </div>
-                        <p class="option-details">
-                            {% if artwork.category.name == 'painting' %}
-                                High-quality print: {{ artwork.print_dimensions_display }}
+                        {% endif %}
+                        
+                        <!-- Availability Status -->
+                        {% if artwork.copies_available > 0 %}
+                            {% if artwork.is_limited_edition %}
+                            <p class="availability text-muted mb-3">
+                                <i class="bi bi-box-seam"></i> Limited Edition: {{ artwork.remaining_copies }} of {{ artwork.total_copies }} available
+                            </p>
                             {% else %}
-                                Set of 8 signed photographs showcasing multiple angles
+                            <p class="availability text-success mb-3">
+                                <i class="bi bi-check-circle"></i> Available
+                            </p>
                             {% endif %}
-                        </p>
-                        <p class="availability text-muted">
-                            {{ artwork.remaining_second_option }} of {{ artwork.total_second_option_copies }} available
-                        </p>
-                        <button class="btn btn-outline-primary w-100 add-to-cart-btn" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#addToCartModal"
-                                data-artwork-id="{{ artwork.id }}"
-                                data-artwork-title="{{ artwork.title }}"
-                                data-artwork-image="{{ artwork.main_image.url }}"
-                                data-original-available="false"
-                                data-original-price="0"
-                                data-second-available="{{ artwork.second_option_available }}"
-                                data-second-name="{{ artwork.second_option_name }}"
-                                data-second-price="{{ artwork.second_option_price }}"
-                                data-preferred-type="second">
-                            Add {{ artwork.second_option_name }} to Cart
-                        </button>
-                    </div>
-                    {% else %}
-                    <div class="price-option sold-option mt-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <strong>{{ artwork.second_option_name }}</strong>
-                            <span class="badge bg-secondary">SOLD OUT</span>
+                            
+                            <!-- Add to Cart Button -->
+                            <button class="btn btn-primary btn-lg w-100 add-to-cart-btn" 
+                                    data-artwork-id="{{ artwork.id }}"
+                                    data-artwork-title="{{ artwork.title }}"
+                                    data-artwork-price="{{ artwork.price }}">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        {% else %}
+                        <div class="alert alert-secondary">
+                            <i class="bi bi-x-circle"></i> This artwork is no longer available
                         </div>
+                        {% endif %}
+                        
+                        <!-- Link to Original (for prints) -->
+                        {% if artwork.original_artwork %}
+                        <div class="mt-3 p-3 bg-light rounded">
+                            <small class="text-muted d-block mb-2">
+                                <i class="bi bi-info-circle"></i> This is a limited edition print of:
+                            </small>
+                            <a href="{% url 'gallery:artwork_detail' artwork.original_artwork.id %}" 
+                               class="text-decoration-none">
+                                <strong>{{ artwork.original_artwork.title }}</strong>
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                 </div>
                 
                 <!-- Wishlist -->
@@ -181,12 +156,14 @@
                 <div class="technical-details">
                     <h5>Technical Details</h5>
                     <ul class="list-unstyled">
-                        <li><strong>Category:</strong> {{ artwork.category.get_name_display }}</li>
-                        <li><strong>Original Size:</strong> {{ artwork.original_dimensions_display }}</li>
-                        {% if artwork.category.name == 'painting' %}
-                        <li><strong>Print Size:</strong> {{ artwork.print_dimensions_display }}</li>
+                        <li><strong>Category:</strong> {{ artwork.category.display_name }}</li>
+                        {% if artwork.dimensions_display %}
+                        <li><strong>Dimensions:</strong> {{ artwork.dimensions_display }}</li>
                         {% endif %}
                         <li><strong>Year Created:</strong> {{ artwork.artwork_creation_date.year }}</li>
+                        {% if artwork.is_limited_edition %}
+                        <li><strong>Edition:</strong> Limited Edition of {{ artwork.total_copies }}</li>
+                        {% endif %}
                         <li><strong>Added to Gallery:</strong> {{ artwork.created_at|date:"M d, Y" }}</li>
                     </ul>
                 </div>
@@ -209,7 +186,7 @@
     <div class="related-artworks mt-5">
         <div class="row">
             <div class="col-12">
-                <h3 class="mb-4">More {{ artwork.category.get_name_display }}s</h3>
+                <h3 class="mb-4">More {{ artwork.category.display_name }}s</h3>
             </div>
         </div>
         <div class="row">
@@ -229,12 +206,10 @@
                         <h5 class="artwork-title">{{ related.title }}</h5>
                         <p class="artwork-year">{{ related.artwork_creation_date.year }}</p>
                         <div class="artwork-pricing">
-                            {% if related.original_available %}
-                            <span class="price">From ${{ related.original_price }}</span>
-                            {% elif related.second_option_available %}
-                            <span class="price">From ${{ related.second_option_price }}</span>
+                            {% if related.copies_available > 0 %}
+                            <span class="price">${{ related.price }}</span>
                             {% else %}
-                            <span class="badge bg-secondary">Sold</span>
+                            <span class="badge bg-secondary">Sold Out</span>
                             {% endif %}
                         </div>
                     </div>
@@ -244,76 +219,6 @@
         </div>
     </div>
     {% endif %}
-</div>
-
-<!-- Add to Cart Modal -->
-<div class="modal fade" id="addToCartModal" tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addToCartModalLabel">Add to Cart</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="container-fluid">
-                    <div class="row">
-                        <!-- Artwork Image -->
-                        <div class="col-md-5">
-                            <img id="modalArtworkImage" src="" alt="Artwork" class="img-fluid rounded shadow-sm">
-                        </div>
-                        
-                        <!-- Purchase Options -->
-                        <div class="col-md-7">
-                            <h4 id="modalArtworkTitle" class="mb-3"></h4>
-                            
-                            <!-- Purchase Type Selection -->
-                            <div class="mb-4">
-                                <label class="form-label">Select Purchase Type:</label>
-                                <div id="purchaseOptions">
-                                    <!-- Options will be populated by JavaScript -->
-                                </div>
-                            </div>
-                            
-                            <!-- Quantity Selection -->
-                            <div class="mb-4">
-                                <label for="quantity" class="form-label">Quantity:</label>
-                                <div class="input-group" style="max-width: 150px;">
-                                    <button class="btn btn-outline-secondary" type="button" id="decreaseQty">-</button>
-                                    <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="10">
-                                    <button class="btn btn-outline-secondary" type="button" id="increaseQty">+</button>
-                                </div>
-                            </div>
-                            
-                            <!-- Price Summary -->
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>Item Price:</span>
-                                        <span id="itemPrice">$0.00</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>Quantity:</span>
-                                        <span id="itemQuantity">1</span>
-                                    </div>
-                                    <hr>
-                                    <div class="d-flex justify-content-between fw-bold">
-                                        <span>Total:</span>
-                                        <span id="totalPrice">$0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmAddToCart">
-                    <i class="bi bi-cart-plus me-2"></i>Add to Cart
-                </button>
-            </div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
@@ -330,161 +235,19 @@ function changeMainImage(imageUrl) {
 }
 
 $(document).ready(function() {
-    let currentArtwork = null;
-    let selectedType = 'original';
-    
-    // Handle modal show event
-    $('#addToCartModal').on('show.bs.modal', function (event) {
-        const button = $(event.relatedTarget);
-        currentArtwork = {
-            id: button.data('artwork-id'),
-            title: button.data('artwork-title'),
-            image: button.data('artwork-image'),
-            originalAvailable: button.data('original-available'),
-            originalPrice: parseFloat(button.data('original-price')) || 0,
-            secondAvailable: button.data('second-available'),
-            secondName: button.data('second-name'),
-            secondPrice: parseFloat(button.data('second-price')) || 0,
-            preferredType: button.data('preferred-type') || 'original'
-        };
-        
-        populateModal();
-    });
-    
-    function populateModal() {
-        // Set artwork details
-        $('#modalArtworkTitle').text(currentArtwork.title);
-        $('#modalArtworkImage').attr('src', currentArtwork.image);
-        
-        // Create purchase options
-        let optionsHtml = '';
-        let hasOptions = false;
-        
-        if (currentArtwork.originalAvailable) {
-            const isPreferred = currentArtwork.preferredType === 'original';
-            optionsHtml += `
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="purchaseType" id="originalOption" value="original" ${isPreferred ? 'checked' : ''}>
-                    <label class="form-check-label" for="originalOption">
-                        <strong>Original Artwork</strong> - $${currentArtwork.originalPrice.toFixed(2)}
-                        <small class="text-muted d-block">One-of-a-kind original piece</small>
-                    </label>
-                </div>
-            `;
-            if (isPreferred) selectedType = 'original';
-            hasOptions = true;
-        }
-        
-        if (currentArtwork.secondAvailable) {
-            const isPreferred = currentArtwork.preferredType === 'second';
-            optionsHtml += `
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="purchaseType" id="secondOption" value="second" ${isPreferred ? 'checked' : ''}>
-                    <label class="form-check-label" for="secondOption">
-                        <strong>${currentArtwork.secondName || 'Print'}</strong> - $${currentArtwork.secondPrice.toFixed(2)}
-                        <small class="text-muted d-block">High-quality reproduction</small>
-                    </label>
-                </div>
-            `;
-            if (isPreferred) selectedType = 'second';
-            hasOptions = true;
-        }
-        
-        // If no preferred type set and we have options, set default
-        if (!currentArtwork.preferredType && hasOptions) {
-            if (currentArtwork.originalAvailable) {
-                selectedType = 'original';
-            } else if (currentArtwork.secondAvailable) {
-                selectedType = 'second';
-            }
-        }
-        
-        $('#purchaseOptions').html(optionsHtml);
-        
-        // Update pricing
-        updatePricing();
-        
-        // Bind events
-        $('input[name="purchaseType"]').on('change', function() {
-            selectedType = $(this).val();
-            updatePricing();
-        });
-    }
-    
-    function updatePricing() {
-        const quantity = parseInt($('#quantity').val()) || 1;
-        let itemPrice = 0;
-        
-        if (selectedType === 'original') {
-            itemPrice = currentArtwork.originalPrice;
-        } else {
-            itemPrice = currentArtwork.secondPrice;
-        }
-        
-        const totalPrice = itemPrice * quantity;
-        
-        $('#itemPrice').text('$' + itemPrice.toFixed(2));
-        $('#itemQuantity').text(quantity);
-        $('#totalPrice').text('$' + totalPrice.toFixed(2));
-    }
-    
-    // Quantity controls
-    $('#increaseQty').on('click', function() {
-        const qty = parseInt($('#quantity').val()) || 1;
-        if (qty < 10) {
-            $('#quantity').val(qty + 1);
-            updatePricing();
-        }
-    });
-    
-    $('#decreaseQty').on('click', function() {
-        const qty = parseInt($('#quantity').val()) || 1;
-        if (qty > 1) {
-            $('#quantity').val(qty - 1);
-            updatePricing();
-        }
-    });
-    
-    $('#quantity').on('input', function() {
-        let qty = parseInt($(this).val()) || 1;
-        if (qty < 1) qty = 1;
-        if (qty > 10) qty = 10;
-        $(this).val(qty);
-        updatePricing();
-    });
-    
-    // Confirm add to cart
-    $('#confirmAddToCart').on('click', function() {
+    // Handle add to cart button click - direct add without modal
+    $('.add-to-cart-btn').on('click', function() {
         const button = $(this);
+        const artworkId = button.data('artwork-id');
+        const artworkTitle = button.data('artwork-title');
         const originalText = button.html();
         
         // Show loading state
-        button.html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Adding...');
+        button.html('<span class="spinner-border spinner-border-sm me-2"></span>Adding...');
         button.prop('disabled', true);
         
-        // Get CSRF token with multiple fallbacks
-        let csrfToken = null;
-        
-        // Try to get from form token
-        const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (tokenElement) {
-            csrfToken = tokenElement.value;
-        }
-        
-        // Fallback to meta tag
-        if (!csrfToken) {
-            const metaElement = document.querySelector('meta[name="csrf-token"]');
-            if (metaElement) {
-                csrfToken = metaElement.getAttribute('content');
-            }
-        }
-        
-        // Fallback to cookie method
-        if (!csrfToken) {
-            csrfToken = getCookie('csrftoken');
-        }
-        
-        console.log('CSRF Token:', csrfToken); // Debug log
+        // Get CSRF token
+        const csrfToken = getCookie('csrftoken');
         
         if (!csrfToken) {
             showMessage('Security token missing. Please refresh the page.', 'error');
@@ -502,22 +265,18 @@ $(document).ready(function() {
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify({
-                artwork_id: currentArtwork.id,
-                item_type: selectedType,
-                quantity: parseInt($('#quantity').val()) || 1
+                artwork_id: artworkId,
+                quantity: 1
             }),
             success: function(data) {
                 if (data.success) {
-                    // Update cart count
+                    // Update cart count in navigation if it exists
                     if ($('#cart-count').length) {
                         $('#cart-count').text(data.cart_total_items || 0);
                     }
                     
                     // Show success message
                     showMessage(data.message, 'success');
-                    
-                    // Close modal
-                    $('#addToCartModal').modal('hide');
                 } else {
                     showMessage(data.message, 'error');
                 }
@@ -526,60 +285,48 @@ $(document).ready(function() {
                 showMessage('An error occurred. Please try again.', 'error');
             },
             complete: function() {
-                // Reset button
-                button.html(originalText);
-                button.prop('disabled', false);
+                // Reset button after delay
+                setTimeout(function() {
+                    button.html(originalText);
+                    button.prop('disabled', false);
+                }, 1000);
             }
         });
     });
     
-    // Wishlist functionality - directly add to wishlist
+    // Wishlist functionality
     $('.wishlist-btn').on('click', function() {
         const artworkId = $(this).data('artwork-id');
         const button = $(this);
         
-        // Check if user is authenticated
         {% if user.is_authenticated %}
-            // Directly add to wishlist with 'original' as default
-            addToWishlist(artworkId, 'original', button);
+            const originalText = button.html();
+            button.html('<span class="spinner-border spinner-border-sm"></span>');
+            button.prop('disabled', true);
+            
+            $.post('{% url "accounts:add_to_wishlist" 0 %}'.replace('0', artworkId), {
+                'csrfmiddlewaretoken': getCookie('csrftoken')
+            })
+            .done(function(data) {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    button.html('<i class="bi bi-heart-fill"></i> Added');
+                } else {
+                    showMessage(data.message, 'error');
+                    button.html(originalText);
+                }
+            })
+            .fail(function() {
+                showMessage('Error adding to wishlist.', 'error');
+                button.html(originalText);
+            })
+            .always(function() {
+                button.prop('disabled', false);
+            });
         {% else %}
             showMessage('Please login to add items to your wishlist.', 'info');
         {% endif %}
     });
-    
-
-    
-    function addToWishlist(artworkId, itemType, button) {
-        const originalText = button.html();
-        button.html('<i class="spinner-border spinner-border-sm"></i> Adding...');
-        button.prop('disabled', true);
-        
-        $.post('{% url "accounts:add_to_wishlist" 0 %}'.replace('0', artworkId), {
-            'item_type': itemType,
-            'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
-        })
-        .done(function(data) {
-            if (data.success) {
-                showMessage(data.message, 'success');
-                button.removeClass('btn-outline-secondary').addClass('btn-success');
-                button.html('<i class="fas fa-heart"></i> Added to Wishlist');
-            } else {
-                showMessage(data.message, 'error');
-            }
-        })
-        .fail(function() {
-            showMessage('Error adding to wishlist. Please try again.', 'error');
-        })
-        .always(function() {
-            setTimeout(function() {
-                button.html(originalText);
-                button.prop('disabled', false);
-                if (button.hasClass('btn-success')) {
-                    button.removeClass('btn-success').addClass('btn-outline-secondary');
-                }
-            }, 2000);
-        });
-    }
 });
 
 // Helper function to get CSRF token from cookies
@@ -644,23 +391,10 @@ function showMessage(message, type) {
 }
 
 .price-option {
-    border: 1px solid #ddd;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 1rem;
-}
-
-.price-option.sold-option {
-    background-color: #f8f9fa;
-    opacity: 0.7;
-}
-
-.price {
-    color: var(--primary-color);
-    font-weight: bold;
-}
-
-.availability {
-    font-size: 0.9rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
 }
 </style>
 {% endblock %}

@@ -41,43 +41,35 @@ class Order(TimestampedModel):
 
 class OrderItem(TimestampedModel):
     """Individual items within an order"""
-    ITEM_TYPE_CHOICES = [
-        ('original', 'Original Artwork'),
-        ('print', 'Print Copy'),
-        ('photo_set', 'Signed Photo Set'),
-    ]
     
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     artwork = models.ForeignKey(Artwork, on_delete=models.PROTECT)
-    item_type = models.CharField(max_length=15, choices=ITEM_TYPE_CHOICES)
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     
     def __str__(self):
-        return f"{self.artwork.title} ({self.get_item_type_display()}) - {self.quantity}x"
+        return f"{self.artwork.title} - {self.quantity}x"
     
     def save(self, *args, **kwargs):
         # Auto-calculate total price
         if self.unit_price and self.quantity:
             self.total_price = self.unit_price * self.quantity
         
-        # Set unit price based on item type if not set
+        # Set unit price if not set
         if not self.unit_price:
-            if self.item_type == 'original':
-                self.unit_price = self.artwork.original_price
-            else:
-                self.unit_price = self.artwork.second_option_price
+            self.unit_price = self.artwork.price
             self.total_price = self.unit_price * self.quantity
         
         super().save(*args, **kwargs)
         
         # Update artwork inventory
-        if self.item_type != 'original':
-            self.artwork.sold_second_option_copies += self.quantity
+        if self.artwork.is_limited_edition:
+            self.artwork.sold_copies += self.quantity
             self.artwork.save()
         else:
-            self.artwork.original_available = False
+            # For unique items, mark as unavailable
+            self.artwork.is_available = False
             self.artwork.save()
 
 
@@ -178,28 +170,20 @@ class Cart(TimestampedModel):
 
 class CartItem(TimestampedModel):
     """Items in shopping cart"""
-    ITEM_TYPE_CHOICES = [
-        ('original', 'Original Artwork'),
-        ('print', 'Print Copy'),
-        ('photo_set', 'Signed Photo Set'),
-    ]
     
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     artwork = models.ForeignKey(Artwork, on_delete=models.CASCADE)
-    item_type = models.CharField(max_length=15, choices=ITEM_TYPE_CHOICES)
     quantity = models.PositiveIntegerField(default=1)
     
     class Meta:
-        unique_together = ['cart', 'artwork', 'item_type']
+        unique_together = ['cart', 'artwork']
     
     def __str__(self):
-        return f"{self.artwork.title} ({self.get_item_type_display()}) - {self.quantity}x"
+        return f"{self.artwork.title} - {self.quantity}x"
     
     @property
     def unit_price(self):
-        if self.item_type == 'original':
-            return self.artwork.original_price
-        return self.artwork.second_option_price
+        return self.artwork.price
     
     @property
     def total_price(self):

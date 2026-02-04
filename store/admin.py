@@ -84,10 +84,14 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['order_link', 'artwork', 'item_type', 'quantity', 'unit_price', 'total_price']
-    list_filter = ['item_type', 'order__order_status', 'order__created_at']
+    list_display = ['order_link', 'artwork', 'artwork_category', 'quantity', 'unit_price', 'total_price']
+    list_filter = ['order__order_status', 'order__created_at', 'artwork__category']
     search_fields = ['artwork__title', 'order__id']
     readonly_fields = ['total_price']
+    
+    def artwork_category(self, obj):
+        return obj.artwork.category.display_name
+    artwork_category.short_description = 'Category'
     
     def order_link(self, obj):
         url = reverse('admin:store_order_change', args=[obj.order.pk])
@@ -158,10 +162,14 @@ class CartAdmin(admin.ModelAdmin):
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    list_display = ['cart_owner', 'artwork', 'item_type', 'quantity', 'total_price']
-    list_filter = ['item_type', 'cart__created_at']
+    list_display = ['cart_owner', 'artwork', 'artwork_category', 'quantity', 'total_price']
+    list_filter = ['cart__created_at', 'artwork__category']
     search_fields = ['cart__user__username', 'artwork__title']
     readonly_fields = ['total_price', 'unit_price']
+    
+    def artwork_category(self, obj):
+        return obj.artwork.category.display_name
+    artwork_category.short_description = 'Category'
     
     def cart_owner(self, obj):
         if obj.cart.user:

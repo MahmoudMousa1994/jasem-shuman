@@ -9,8 +9,8 @@
     <!-- Page Header -->
     <div class="row mb-5">
         <div class="col-lg-8 mx-auto text-center">
-            <h1 class="page-title">{{ category.get_name_display }}</h1>
-            <p class="page-subtitle">{{ category.description|default:"Explore Jasem's collection of "|add:category.get_name_display|lower }}</p>
+            <h1 class="page-title">{{ category.display_name }}</h1>
+            <p class="page-subtitle">{{ category.description|default:"Explore Jasem's collection of "|add:category.display_name|lower }}</p>
         </div>
     </div>
     
@@ -22,7 +22,7 @@
                     <input type="text" 
                            name="search" 
                            value="{{ search_query }}" 
-                           placeholder="Search {{ category.get_name_display|lower }}..."
+                           placeholder="Search {{ category.display_name|lower }}..."
                            class="form-control">
                     <button type="submit" class="btn btn-outline-primary">
                         <i class="fas fa-search"></i> Search

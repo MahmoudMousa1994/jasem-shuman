@@ -13,25 +13,22 @@ class TimestampedModel(models.Model):
 
 
 class Category(TimestampedModel):
-    """Art categories: painting, sculpture"""
-    CATEGORY_CHOICES = [
-        ('painting', 'Painting'),
-        ('sculpture', 'Sculpture'),
-    ]
+    """Art categories: painting, sculpture, photography, etc."""
     
-    name = models.CharField(max_length=20, choices=CATEGORY_CHOICES, unique=True)
+    name = models.CharField(max_length=50, unique=True, help_text="Category name (e.g., painting, sculpture, photography)")
+    display_name = models.CharField(max_length=100, help_text="Display name for the category")
     description = models.TextField(blank=True)
     
     class Meta:
         verbose_name_plural = "Categories"
-        ordering = ['name']
+        ordering = ['display_name']
     
     def __str__(self):
-        return self.get_name_display()
+        return self.display_name
 
 
 class Artwork(TimestampedModel):
-    """Main artwork model with dual pricing system"""
+    """Main artwork model - supports 4 categories: original paintings, original sculptures, signed prints, signed photo sets"""
     
     # Basic artwork info
     title = models.CharField(max_length=200)
@@ -41,25 +38,28 @@ class Artwork(TimestampedModel):
     # When Jasem actually created this artwork
     artwork_creation_date = models.DateField(help_text="When Jasem created this artwork")
     
-    # Original artwork dimensions
-    original_height = models.DecimalField(max_digits=8, decimal_places=2, help_text="Original height in cm")
-    original_width = models.DecimalField(max_digits=8, decimal_places=2, help_text="Original width in cm")
-    original_depth = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, help_text="Original depth in cm (for sculptures)")
-    
-    # Print/Photo set dimensions
-    print_height = models.DecimalField(max_digits=8, decimal_places=2, help_text="Print/photo height in cm")
-    print_width = models.DecimalField(max_digits=8, decimal_places=2, help_text="Print/photo width in cm")
+    # Dimensions
+    height = models.DecimalField(max_digits=8, decimal_places=2, help_text="Height in cm")
+    width = models.DecimalField(max_digits=8, decimal_places=2, help_text="Width in cm")
+    depth = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, help_text="Depth in cm (for sculptures)")
     
     # Media files
     main_image = models.ImageField(upload_to='artworks/')
     artwork_video = models.FileField(upload_to='artworks/videos/', null=True, blank=True, help_text="Video of the artwork")
     
-    # Pricing & inventory
-    original_price = models.DecimalField(max_digits=10, decimal_places=2)
-    original_available = models.BooleanField(default=True)
-    second_option_price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price for prints/photo sets")
-    total_second_option_copies = models.PositiveIntegerField(default=50)
-    sold_second_option_copies = models.PositiveIntegerField(default=0)
+    # Pricing & availability
+    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Price for this item")
+    is_available = models.BooleanField(default=True, help_text="Is this item available for purchase?")
+    
+    # Limited edition inventory (for prints and photo sets only)
+    is_limited_edition = models.BooleanField(default=False, help_text="Check if this is a limited edition (prints/photo sets)")
+    total_copies = models.PositiveIntegerField(default=0, help_text="Total number of copies available (0 = unlimited)")
+    sold_copies = models.PositiveIntegerField(default=0, help_text="Number of copies sold")
+    
+    # Link to original artwork (for prints and photo sets)
+    original_artwork = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, 
+                                        related_name='editions',
+                                        help_text="Link to the original artwork (for prints/photo sets only)")
     
     # Relations
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
@@ -78,40 +78,37 @@ class Artwork(TimestampedModel):
         return reverse('gallery:artwork_detail', kwargs={'pk': self.pk})
     
     @property
-    def original_dimensions_display(self):
-        """Format original dimensions for display"""
-        if self.category.name == 'sculpture' and self.original_depth:
-            return f"{self.original_height} × {self.original_width} × {self.original_depth} cm"
-        return f"{self.original_height} × {self.original_width} cm"
+    def dimensions_display(self):
+        """Format dimensions for display"""
+        if self.depth:
+            return f"{self.height} × {self.width} × {self.depth} cm"
+        return f"{self.height} × {self.width} cm"
     
     @property
-    def print_dimensions_display(self):
-        """Format print/photo dimensions for display"""
-        return f"{self.print_height} × {self.print_width} cm"
+    def remaining_copies(self):
+        """Calculate remaining copies for limited editions"""
+        if not self.is_limited_edition or self.total_copies == 0:
+            return None
+        return self.total_copies - self.sold_copies
     
     @property
-    def remaining_second_option(self):
-        """Calculate remaining copies of second option"""
-        return self.total_second_option_copies - self.sold_second_option_copies
+    def copies_available(self):
+        """Check if copies are still available"""
+        if not self.is_limited_edition:
+            return self.is_available
+        if self.total_copies == 0:  # Unlimited
+            return self.is_available
+        return self.is_available and (self.sold_copies < self.total_copies)
     
     @property
-    def second_option_available(self):
-        """Check if second option is available"""
-        return self.remaining_second_option > 0
+    def is_original(self):
+        """Check if this is an original artwork (not a print/photo set)"""
+        return self.original_artwork is None
     
     @property
-    def second_option_name(self):
-        """Get the name of the second option based on category"""
-        if self.category.name == 'painting':
-            return 'Print Copy'
-        elif self.category.name == 'sculpture':
-            return 'Signed Photo Set'
-        return 'Second Option'
-    
-    @property
-    def has_video(self):
-        """Check if artwork has a video"""
-        return bool(self.artwork_video)
+    def has_editions(self):
+        """Check if this original has prints/photo sets"""
+        return self.is_original and self.editions.filter(is_active=True).exists()
     
     @property
     def artwork_age_years(self):
@@ -127,6 +124,8 @@ class SculptureImage(TimestampedModel):
     image = models.ImageField(upload_to='sculptures/angles/')
     angle_description = models.CharField(max_length=100, help_text="e.g., 'Front view', 'Side angle', 'Detail shot'")
     order = models.PositiveIntegerField(default=1, help_text="Display order (1-8)")
+    height = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Height in cm (for printed images)")
+    width = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Width in cm (for printed images)")
     
     class Meta:
         ordering = ['order']
@@ -135,8 +134,15 @@ class SculptureImage(TimestampedModel):
     def __str__(self):
         return f"{self.artwork.title} - {self.angle_description}"
     
+    @property
+    def dimensions_display(self):
+        """Return formatted dimensions if available"""
+        if self.height and self.width:
+            return f"{self.height} × {self.width} cm"
+        return "Dimensions not specified"
+    
     def save(self, *args, **kwargs):
-        # Ensure only sculptures can have multiple images
-        if self.artwork.category.name != 'sculpture':
-            raise ValueError("Only sculptures can have multiple angle images")
+        # Allow for both sculptures and printed sculpture sets
+        if self.artwork.category and 'sculpture' not in self.artwork.category.name.lower():
+            raise ValueError("Only sculptures and printed sculpture sets can have multiple angle images")
         super().save(*args, **kwargs)

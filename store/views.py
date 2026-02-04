@@ -68,10 +68,11 @@ def store_home(request):
     for category in categories:
         # Get available artworks for this category
         available_artworks = Artwork.objects.filter(
-            category=category
+            category=category,
+            is_active=True
         ).filter(
-            models.Q(original_available=True) | 
-            models.Q(total_second_option_copies__gt=models.F('sold_second_option_copies'))
+            models.Q(is_available=True) |
+            models.Q(is_limited_edition=True, sold_copies__lt=models.F('total_copies'))
         )
         
         artwork_count = available_artworks.count()
@@ -97,14 +98,15 @@ def category_view(request, category_name):
     
     # Get artworks for this category that are available
     artworks = Artwork.objects.filter(
-        category=category
+        category=category,
+        is_active=True
     ).filter(
-        models.Q(original_available=True) | 
-        models.Q(total_second_option_copies__gt=models.F('sold_second_option_copies'))
+        models.Q(is_available=True) |
+        models.Q(is_limited_edition=True, sold_copies__lt=models.F('total_copies'))
     ).order_by('title')
     
     context = {
-        'page_title': f'{category.get_name_display()} - Jasem Shuman Art',
+        'page_title': f'{category.display_name} - Jasem Shuman Art',
         'category': category,
         'artworks': artworks,
         'artwork_count': artworks.count(),
@@ -153,22 +155,16 @@ def add_to_cart(request):
         # Parse JSON data
         data = json.loads(request.body)
         artwork_id = data.get('artwork_id')
-        item_type = data.get('item_type', 'original')
         quantity = int(data.get('quantity', 1))
         
         # Get artwork
         artwork = get_object_or_404(Artwork, id=artwork_id)
         
         # Check availability
-        if item_type == 'original' and not artwork.original_available:
+        if not artwork.copies_available:
             return JsonResponse({
                 'success': False, 
-                'message': 'Original artwork is no longer available'
-            })
-        elif item_type != 'original' and not artwork.second_option_available:
-            return JsonResponse({
-                'success': False, 
-                'message': f'{artwork.second_option_name} is no longer available'
+                'message': 'This artwork is no longer available'
             })
         
         # Get or create cart
@@ -184,7 +180,6 @@ def add_to_cart(request):
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
             artwork=artwork,
-            item_type=item_type,
             defaults={'quantity': quantity}
         )
         
@@ -383,7 +378,6 @@ def checkout(request):
                 OrderItem.objects.create(
                     order=order,
                     artwork=cart_item.artwork,
-                    item_type=cart_item.item_type,
                     quantity=cart_item.quantity,
                     unit_price=cart_item.unit_price,
                     total_price=cart_item.total_price

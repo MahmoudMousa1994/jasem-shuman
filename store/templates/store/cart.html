@@ -23,7 +23,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <h5 class="mb-1">{{ item.artwork.title }}</h5>
-                                    <p class="text-muted mb-0">{{ item.artwork.category.get_name_display }}</p>
+                                    <p class="text-muted mb-0">{{ item.artwork.category.display_name }}</p>
                                     <p class="text-muted mb-0">
                                         {% if item.item_type == 'original' %}
                                             Original Artwork
